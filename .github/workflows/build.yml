@@ -7,6 +7,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+    - uses: actions/checkout@master
+      with:
+        fetch-depth: 0
+        submodules: recursive
+
     - name: Install Ruff
       uses: astral-sh/ruff-action@v3
       with:
