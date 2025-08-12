@@ -7,10 +7,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - name: Format and lint with Ruff
+    - name: Install Ruff
       uses: astral-sh/ruff-action@v3
       with:
         version: "latest"
-      run: |
+        
+    - run: |
         ruff check dexmcp_dspy_client.py
         ruff check dexmcp/dexmcp_server.py
