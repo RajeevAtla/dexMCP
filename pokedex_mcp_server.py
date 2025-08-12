@@ -40,7 +40,7 @@ class SpriteURL(BaseModel):
 
 # ---------- Server ----------
 
-mcp = FastMCP("pypokedex")
+mcp = FastMCP("DexMCP Server")
 
 def _lookup(name_or_dex: str):
     """Internal helper to fetch a pypokedex.Pokemon by name (case-insensitive) or dex number."""
