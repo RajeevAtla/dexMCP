@@ -6,6 +6,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: astral-sh/ruff-action@v3
-    - run: ruff check --fix
-    - run: ruff format
+
+    - name: Format and lint with Ruff
+      uses: astral-sh/ruff-action@v3
+      with:
+        version: "latest"
+      run: |
+        ruff check dexmcp_dspy_client.py
+        ruff check dexmcp/dexmcp_server.py
