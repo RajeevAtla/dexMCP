@@ -18,5 +18,5 @@ jobs:
         version: "latest"
         
     - run: |
-        ruff check dexmcp_dspy_client.py
+        ruff check dspy_client.py
         ruff check dexmcp/dexmcp_server.py
