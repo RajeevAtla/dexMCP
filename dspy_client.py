@@ -6,7 +6,7 @@ import dspy
 # Create server parameters for stdio connection
 server_params = StdioServerParameters(
     command="python",  # Executable
-    args=["pokedex_mcp_server.py"],  # Optional command line arguments
+    args=["dexmcp/dexmcp_server.py"],  # Optional command line arguments
     env=None,  # Optional environment variables
 )
 
