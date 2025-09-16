@@ -1,0 +1,9 @@
+pytest
+pytest-cov
+pytest-asyncio
+coverage
+mcp[cli]
+pypokedex
+dspy-ai
+langchain
+langchain-openai
