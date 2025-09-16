@@ -90,6 +90,30 @@ python dspy_client.py "Compare Charizard and Tyranitar defensive coverage in sca
 
 Add `--demo` alongside your prompt to run it first, followed by the built-in scenarios.
 
+### Example: run the LangChain demo agent
+
+If you prefer LangChain's agent stack, install the optional dependencies:
+
+```bash
+pip install langchain langchain-openai
+```
+
+Ensure `OPENAI_API_KEY` (or another provider key supported by your LangChain LLM) is available in the environment, then run:
+
+```bash
+python langchain_client.py --demo
+```
+
+The LangChain agent reuses the same scenario sequence as the DSPy demo, exercising the MCP coverage, ability, evolution, encounter, breeding, and moveset tools.
+
+Provide a custom prompt with:
+
+```bash
+python langchain_client.py "Plan a battle-ready moveset for gardevoir in scarlet-violet."
+```
+
+Use `--demo` alongside a custom prompt to run it first before the curated walkthrough.
+
 ## Project structure
 
 ```
@@ -97,6 +121,7 @@ Add `--demo` alongside your prompt to run it first, followed by the built-in sce
 ├── dexmcp/
 │   └── dexmcp_server.py     # FastMCP server exposing Pokedex tooling
 ├── dspy_client.py           # Optional DSPy example agent that consumes the MCP server
+├── langchain_client.py      # Optional LangChain agent that drives the MCP tools
 ├── logo.png                 # Branding used in the README banner
 ├── LICENSE.md               # MIT License
 └── README.md
