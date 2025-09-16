@@ -7,7 +7,7 @@
 DexMCP is a Model Context Protocol (MCP) server that wraps the community-maintained
 [pypokedex](https://pypi.org/project/pypokedex/) client for the
 [PokéAPI](https://pokeapi.co/) into a collection of structured tools.
-It lets MCP-compatible applications fetch Pokédex data – from base stats to move
+It lets MCP-compatible applications fetch Pokédex data - from base stats to move
 lists and sprite URLs – without writing any custom API plumbing.
 
 ## Key capabilities
@@ -26,8 +26,8 @@ lists and sprite URLs – without writing any custom API plumbing.
 
 | Tool | Description | Required arguments | Optional arguments | Returns |
 | --- | --- | --- | --- | --- |
-| `get_pokemon` | Core Pokédex summary including stats, types, height/weight, and base experience. | `name_or_dex` – Pokémon name (case-insensitive) or dex number. | – | [`PokemonSummary`](dexmcp/dexmcp_server.py) model with nested base stats. |
-| `get_moves` | List the moves a Pokémon can learn in a specific PokéAPI game entry. | `name_or_dex`, `game`. | – | List of [`Move`](dexmcp/dexmcp_server.py) records (move name, learn method, optional level). |
+| `get_pokemon` | Core Pokédex summary including stats, types, height/weight, and base experience. | `name_or_dex` – Pokémon name (case-insensitive) or dex number. | N/A | [`PokemonSummary`](dexmcp/dexmcp_server.py) model with nested base stats. |
+| `get_moves` | List the moves a Pokémon can learn in a specific PokéAPI game entry. | `name_or_dex`, `game`. | N/A | List of [`Move`](dexmcp/dexmcp_server.py) records (move name, learn method, optional level). |
 | `get_sprites` | Produce a direct URL to a sprite image. | `name_or_dex`. | `side` (`front`/`back`), `variant` (`default`, `shiny`, `female`, `female_shiny`). | [`SpriteURL`](dexmcp/dexmcp_server.py) record containing the resolved URL. |
 | `get_descriptions` | Retrieve flavor-text entries keyed by game version. | `name_or_dex`. | `language` (default `en`). | Dict of version identifier → description string. |
 
@@ -59,13 +59,13 @@ useful if you want to run the example agent below.
 python dexmcp/dexmcp_server.py
 ```
 
-The server speaks the Model Context Protocol over stdio. Configure your MCP
-client to launch the command above and it will automatically discover the four
-tools listed earlier.
+The server speaks the Model Context Protocol over stdio. 
+Configure your MCP client to launch the command above and it will automatically discover the four tools listed earlier.
 
 ### Example: ask an agent for stats and moves
 
-The repository includes `dspy_client.py`, a minimal DSPy ReAct agent that connects
+The repository includes `dspy_client.py`, 
+a minimal DSPy client that connects
 to the server and chooses the right tools to satisfy a natural-language request.
 Activate your virtual environment and run:
 
@@ -73,9 +73,8 @@ Activate your virtual environment and run:
 python dspy_client.py
 ```
 
-You should see the agent summarize the retrieved stats and move list for the
-prompt defined at the bottom of the script. Edit the prompt or wire it into your
-own DSPy workflows to integrate DexMCP into larger automations.
+You should see the agent summarize the retrieved stats and move list for the prompt defined at the bottom of the script. 
+Edit the prompt or wire it into your own DSPy workflows to integrate DexMCP into larger automations.
 
 ## Project structure
 
