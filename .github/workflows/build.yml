@@ -6,17 +6,39 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-
     - uses: actions/checkout@master
       with:
         fetch-depth: 0
         submodules: recursive
 
+    - name: Install rumdl
+      run: pip install --upgrade rumdl
+
+    - name: Format Markdown
+      run: |
+        rumdl fmt .
+        git diff --exit-code
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-test.txt
+
     - name: Install Ruff
       uses: astral-sh/ruff-action@v3
       with:
         version: "latest"
-        
-    - run: |
+
+    - name: Lint
+      run: |
         ruff check dspy_client.py
+        ruff check langchain_client.py
         ruff check dexmcp/dexmcp_server.py
+
+    - name: Run tests
+      run: pytest
