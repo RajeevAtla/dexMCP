@@ -3,6 +3,9 @@ from pydantic import BaseModel, Field
 from mcp.server.fastmcp import FastMCP
 import pypokedex
 
+# FastMCP tool definitions that surface Pokedex data for agentic clients.
+# Each decorated function becomes a structured tool discoverable by MCP hosts.
+
 # ---------- Pydantic schemas (structured tool output) ----------
 
 class BaseStats(BaseModel):
@@ -44,6 +47,7 @@ mcp = FastMCP("DexMCP Server")
 
 def _lookup(name_or_dex: str):
     """Internal helper to fetch a pypokedex.Pokemon by name (case-insensitive) or dex number."""
+    # pypokedex caches responses locally, so repeat lookups avoid hitting the public API.
     try:
         if name_or_dex.isdigit():
             return pypokedex.get(dex=int(name_or_dex))
@@ -70,6 +74,7 @@ def get_pokemon(name_or_dex: str) -> PokemonSummary:
         speed=pk.base_stats.speed,
     )
 
+    # Height and weight keep both raw and derived units so clients can choose the display they prefer.
     return PokemonSummary(
         dex=pk.dex,
         name=pk.name,
@@ -88,6 +93,7 @@ def get_moves(name_or_dex: str, game: str) -> List[Move]:
     List the moves a Pokémon can learn in a specific PokeAPI game identifier (e.g., 'scarlet-violet', 'sword-shield').
     """
     pk = _lookup(name_or_dex)
+    # pypokedex exposes move data keyed by game identifier (e.g., 'scarlet-violet'). Missing keys return [].
     moves_for_game = pk.moves.get(game, [])
     return [Move(name=m.name, learn_method=m.learn_method, level=m.level) for m in moves_for_game]
 
@@ -99,6 +105,7 @@ def get_sprites(name_or_dex: str, side: str = "front", variant: str = "default")
     (Availability varies by Pokémon.)
     """
     if side not in {"front", "back"}:
+        # Validate inputs early so downstream tooling gets actionable errors.
         raise ValueError("side must be 'front' or 'back'")
     pk = _lookup(name_or_dex)
 
@@ -113,6 +120,7 @@ def get_descriptions(name_or_dex: str, language: str = "en") -> Dict[str, str]:
     Return flavor-text descriptions (version -> text) in the requested language.
     """
     pk = _lookup(name_or_dex)
+    # Flavor text comes from multiple game entries; keep the raw mapping so clients can pick the ones they need.
     return pk.get_descriptions(language=language)
 
 if __name__ == "__main__":
