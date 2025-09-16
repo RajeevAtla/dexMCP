@@ -1,9 +1,10 @@
-# dexMCP
+<p align='center'>
+    <img src='https://raw.githubusercontent.com/RajeevAtla/dexMCP/main/logo.png'/>
+</P>
 
-| ![Logo](logo.png) |
-|:-----------------:|
+# DexMCP
 
-dexMCP is a Model Context Protocol (MCP) server that wraps the community
+DexMCP is a Model Context Protocol (MCP) server that wraps the community
 maintained [pypokedex](https://pypi.org/project/pypokedex/) client for the
 [PokeAPI](https://pokeapi.co/). It exposes curated tools so MCP compatible
 applications can fetch Pokedex data without custom API plumbing.
@@ -75,7 +76,6 @@ applications can fetch Pokedex data without custom API plumbing.
 - An MCP aware client (or the Python `mcp` package) that can launch stdio
   servers.
 - Internet access so `pypokedex` can query PokeAPI the first time a Pokemon is
-
   requested.
 
 ### Clone and install dependencies
@@ -118,7 +118,6 @@ The agent chains several tools to:
 - Surface Gengar abilities and Eevee evolution branches.
 - List Dratini encounter methods in FireRed and LeafGreen.
 - Summarize Sylveon breeding info and egg moves in Sword and Shield.
-
 - Recommend a Greninja moveset for Sun and Moon.
 
 Provide your own prompt with:
@@ -159,7 +158,7 @@ Use `--demo` with a prompt to run it first before the guided walkthrough.
 
 ## Project structure
 
-```bash
+```
 .
 |-- dexmcp/
 |   `-- dexmcp_server.py   # FastMCP server that exposes the tool set
