@@ -6,9 +6,9 @@
 
 DexMCP is a Model Context Protocol (MCP) server that wraps the community-maintained
 [pypokedex](https://pypi.org/project/pypokedex/) client for the
-[PokéAPI](https://pokeapi.co/) into a collection of structured tools.
-It lets MCP-compatible applications fetch Pokédex data - from base stats to move
-lists and sprite URLs – without writing any custom API plumbing.
+[PokeAPI](https://pokeapi.co/) into a collection of structured tools.
+It lets MCP-compatible applications fetch Pokedex data - from base stats to move
+lists and sprite URLs - without writing any custom API plumbing.
 
 ## Key capabilities
 
@@ -40,7 +40,7 @@ lists and sprite URLs – without writing any custom API plumbing.
 
 - Python 3.10 or newer.
 - An MCP-aware client (or the Python `mcp` package) that can launch stdio servers.
-- Internet access so `pypokedex` can query PokéAPI the first time a Pokémon is requested.
+- Internet access so `pypokedex` can query PokeAPI the first time a Pokemon is requested.
 
 ### Clone and install dependencies
 
@@ -65,26 +65,37 @@ python dexmcp/dexmcp_server.py
 The server speaks the Model Context Protocol over stdio. 
 Configure your MCP client to launch the command above and it will automatically discover the tools listed earlier.
 
-### Example: ask an agent for stats and moves
+### Example: run the DSPy demo agent
 
-The repository includes `dspy_client.py`, 
-a minimal DSPy client that connects
-to the server and chooses the right tools to satisfy a natural-language request.
-Activate your virtual environment and run:
+The repository includes `dspy_client.py`, a minimal DSPy client that connects to the server and chooses the right tools to satisfy natural-language requests.
+Activate your virtual environment and run the curated demo suite:
 
 ```bash
-python dspy_client.py
+python dspy_client.py --demo
 ```
 
-You should see the agent summarize the retrieved stats and move list for the prompt defined at the bottom of the script. 
-Edit the prompt or wire it into your own DSPy workflows to integrate DexMCP into larger automations.
+The agent will sequentially chain multiple MCP tools to:
+- Retrieve Garchomp stats and ORAS level-up moves.
+- Audit defensive coverage for Pikachu, Garchomp, and Gyarados.
+- Surface Gengar abilities and Eevee's branching evolutions.
+- List Dratini encounter methods in FireRed/LeafGreen.
+- Summarize Sylveon's breeding profile and egg moves in Sword/Shield.
+- Recommend a Greninja moveset for Sun/Moon.
+
+To supply your own prompt, run:
+
+```bash
+python dspy_client.py "Compare Charizard and Tyranitar defensive coverage in scarlet-violet."
+```
+
+Add `--demo` alongside your prompt to run it first, followed by the built-in scenarios.
 
 ## Project structure
 
 ```
 .
 ├── dexmcp/
-│   └── dexmcp_server.py     # FastMCP server exposing Pokédex tooling
+│   └── dexmcp_server.py     # FastMCP server exposing Pokedex tooling
 ├── dspy_client.py           # Optional DSPy example agent that consumes the MCP server
 ├── logo.png                 # Branding used in the README banner
 ├── LICENSE.md               # MIT License
@@ -93,8 +104,8 @@ Edit the prompt or wire it into your own DSPy workflows to integrate DexMCP into
 
 ## Data source & caching
 
-`pypokedex` wraps PokéAPI and caches responses on disk (typically under the
-user's cache directory). The first lookup for a Pokémon may take a second or two
+`pypokedex` wraps PokeAPI and caches responses on disk (typically under the
+user's cache directory). The first lookup for a Pokemon may take a second or two
 while data is fetched; subsequent calls are served from the local cache.
 
 ## License
