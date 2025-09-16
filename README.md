@@ -1,12 +1,10 @@
-# Title
+# dexMCP
 
 <p align='center'>
     <img src='https://raw.githubusercontent.com/RajeevAtla/dexMCP/main/logo.png'/>
 </P>
 
-## DexMCP
-
-DexMCP is a Model Context Protocol (MCP) server that wraps the community
+dexMCP is a Model Context Protocol (MCP) server that wraps the community
 maintained [pypokedex](https://pypi.org/project/pypokedex/) client for the
 [PokeAPI](https://pokeapi.co/). It exposes curated tools so MCP compatible
 applications can fetch Pokedex data without custom API plumbing.
