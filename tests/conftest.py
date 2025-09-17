@@ -1,4 +1,3 @@
-import json
 from dataclasses import dataclass
 from types import SimpleNamespace
 from typing import Any, Dict, Iterable, List, Optional
