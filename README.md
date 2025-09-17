@@ -4,6 +4,9 @@
     <img src='https://raw.githubusercontent.com/RajeevAtla/dexMCP/main/logo.png'/>
 </P>
 
+[![lint](https://github.com/RajeevAtla/dexMCP/actions/workflows/lint.yml/badge.svg)](https://github.com/RajeevAtla/dexMCP/actions/workflows/lint.yml)
+[![test](https://github.com/RajeevAtla/dexMCP/actions/workflows/test.yml/badge.svg)](https://github.com/RajeevAtla/dexMCP/actions/workflows/test.yml)
+
 dexMCP is a Model Context Protocol (MCP) server that wraps the community
 maintained [pypokedex](https://pypi.org/project/pypokedex/) client for the
 [PokeAPI](https://pokeapi.co/). It exposes curated tools so MCP compatible
