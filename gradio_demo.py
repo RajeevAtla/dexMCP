@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import types as _types
 from dataclasses import dataclass
@@ -149,7 +150,11 @@ async def _build_tool_specs(session: ClientSession) -> List[ToolSpec]:
 
 
 async def _run_agent(prompt: str, model: str) -> str:
-    llm = ChatOpenAI(model=model, temperature=0)
+    base_url = os.environ.get(
+        "MODEL_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/"
+    )
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("OPENAI_API_KEY")
+    llm = ChatOpenAI(model=model, temperature=0, base_url=base_url, api_key=api_key)
 
     async with stdio_client(SERVER_PARAMS) as (read, write):
         async with ClientSession(read, write) as session:
@@ -185,13 +190,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run the DexMCP LangChain + Gradio demo.")
     parser.add_argument(
         "--model",
-        default="gpt-4o-mini",
+        default="gemini-3-flash-preview",
         help="Chat model identifier passed to LangChain's ChatOpenAI wrapper.",
     )
     parser.add_argument("--host", default="127.0.0.1", help="Host for the Gradio server.")
     parser.add_argument("--port", type=int, default=7860, help="Port for the Gradio server.")
     parser.add_argument("--share", action="store_true", help="Share the Gradio app publicly.")
     args = parser.parse_args()
+
+    _load_env_file()
 
     examples = [[prompt, args.model] for prompt in DEMO_REQUESTS]
 
@@ -207,6 +214,30 @@ def main() -> None:
         chat.chatbot.label = "DexMCP"
 
     demo.queue().launch(server_name=args.host, server_port=args.port, share=args.share)
+
+
+def _load_env_file() -> None:
+    """Load environment variables from a local .env file if present."""
+    if os.environ.get("OPENAI_API_KEY"):
+        return
+    env_path = os.path.join(os.getcwd(), ".env")
+    if not os.path.exists(env_path):
+        return
+    with open(env_path, "r", encoding="utf-8") as handle:
+        for raw_line in handle:
+            line = raw_line.strip()
+    if not line or line.startswith("#"):
+        continue
+    if "=" in line:
+        key, value = line.split("=", 1)
+    elif ":" in line:
+        key, value = line.split(":", 1)
+    else:
+        continue
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key and key not in os.environ:
+                os.environ[key] = value
 
 
 if __name__ == "__main__":
