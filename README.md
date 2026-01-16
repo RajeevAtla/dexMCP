@@ -1,7 +1,7 @@
 # dexMCP
 
 <p align='center'>
-    <img src='https://raw.githubusercontent.com/RajeevAtla/dexMCP/main/logo.png'/>
+    <img src='https://raw.githubusercontent.com/RajeevAtla/dexMCP/main/assets/logo.png'/>
 </P>
 
 [![lint](https://github.com/RajeevAtla/dexMCP/actions/workflows/lint.yml/badge.svg)](https://github.com/RajeevAtla/dexMCP/actions/workflows/lint.yml)
