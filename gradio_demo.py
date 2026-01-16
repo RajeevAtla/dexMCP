@@ -10,9 +10,11 @@ import types as _types
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type
 
-# Gradio depends on rich, which imports core_types on Python 3.13.
-# Provide a lightweight shim to keep the demo importable.
-if "core_types" not in sys.modules:
+def _ensure_core_types_shim() -> None:
+    # Gradio depends on rich, which imports core_types on Python 3.13.
+    # Provide a lightweight shim to keep the demo importable.
+    if "core_types" in sys.modules:
+        return
     import types as _std_types
 
     core_types = _types.ModuleType("core_types")
@@ -22,6 +24,9 @@ if "core_types" not in sys.modules:
     core_types.TracebackType = _std_types.TracebackType
     sys.modules["core_types"] = core_types
 
+
+_ensure_core_types_shim()
+
 import gradio as gr
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
@@ -29,8 +34,14 @@ from mcp.types import Tool
 from pydantic import BaseModel, Field, create_model
 
 from langchain.agents import AgentExecutor, create_tool_calling_agent
+from langchain.agents.structured_chat.base import StructuredChatAgent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import StructuredTool
+
+try:
+    from langchain_google_genai import ChatGoogleGenerativeAI
+except ImportError:  # pragma: no cover - optional dependency
+    ChatGoogleGenerativeAI = None  # type: ignore[assignment]
 
 try:
     from langchain_openai import ChatOpenAI
@@ -49,9 +60,10 @@ DEMO_REQUESTS: Tuple[str, ...] = (
 )
 
 SERVER_PARAMS = StdioServerParameters(
-    command="python",
-    args=["dexmcp/server.py"],
+    command=sys.executable,
+    args=["-m", "dexmcp.server"],
     env=None,
+    cwd=os.getcwd(),
 )
 
 TYPE_MAP: Dict[str, Type[Any]] = {
@@ -81,8 +93,9 @@ def _json_schema_to_annotation(schema: Dict[str, Any]) -> Type[Any]:
 
 
 def _build_args_model(tool: Tool) -> Type[BaseModel]:
-    properties = tool.input_schema.get("properties", {}) if tool.input_schema else {}
-    required = set(tool.input_schema.get("required", [])) if tool.input_schema else set()
+    input_schema = getattr(tool, "input_schema", None) or getattr(tool, "inputSchema", None)
+    properties = input_schema.get("properties", {}) if input_schema else {}
+    required = set(input_schema.get("required", [])) if input_schema else set()
 
     if not properties:
         return create_model(
@@ -150,11 +163,31 @@ async def _build_tool_specs(session: ClientSession) -> List[ToolSpec]:
 
 
 async def _run_agent(prompt: str, model: str) -> str:
-    base_url = os.environ.get(
-        "MODEL_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/"
-    )
-    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("OPENAI_API_KEY")
-    llm = ChatOpenAI(model=model, temperature=0, base_url=base_url, api_key=api_key)
+    gemini_key = os.environ.get("GEMINI_API_KEY")
+    use_structured_chat = False
+    if gemini_key:
+        use_structured_chat = True
+        if ChatGoogleGenerativeAI is not None:
+            llm = ChatGoogleGenerativeAI(
+                model=model,
+                google_api_key=gemini_key,
+                temperature=0,
+                convert_system_message_to_human=True,
+                streaming=False,
+            )
+        else:
+            base_url = os.environ.get(
+                "MODEL_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/"
+            )
+            llm = ChatOpenAI(
+                model=model,
+                temperature=0,
+                base_url=base_url,
+                api_key=gemini_key,
+            )
+    else:
+        api_key = os.environ.get("OPENAI_API_KEY")
+        llm = ChatOpenAI(model=model, temperature=0, api_key=api_key)
 
     async with stdio_client(SERVER_PARAMS) as (read, write):
         async with ClientSession(read, write) as session:
@@ -166,6 +199,17 @@ async def _run_agent(prompt: str, model: str) -> str:
                 "You are DexMCP, a knowledgeable Pokedex assistant. Use the provided tools to satisfy requests. "
                 "Always cite tool results in concise natural language."
             )
+            if use_structured_chat:
+                prompt_template = StructuredChatAgent.create_prompt(tools)
+                agent = StructuredChatAgent.from_llm_and_tools(
+                    llm,
+                    tools,
+                    prompt=prompt_template,
+                )
+                executor = AgentExecutor(agent=agent, tools=tools, verbose=False)
+                result = await executor.ainvoke({"input": prompt})
+                return result.get("output", "<no output>")
+
             prompt_template = ChatPromptTemplate.from_messages(
                 [
                     ("system", system_message),
@@ -186,6 +230,16 @@ async def _chat_handler(message: str, history: list[tuple[str, str]], model: str
     return await _run_agent(message, model=model)
 
 
+def _resolve_port(port: int) -> int:
+    if port != 0:
+        return port
+    import socket
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("", 0))
+        return sock.getsockname()[1]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run the DexMCP LangChain + Gradio demo.")
     parser.add_argument(
@@ -194,11 +248,23 @@ def main() -> None:
         help="Chat model identifier passed to LangChain's ChatOpenAI wrapper.",
     )
     parser.add_argument("--host", default="127.0.0.1", help="Host for the Gradio server.")
-    parser.add_argument("--port", type=int, default=7860, help="Port for the Gradio server.")
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=7860,
+        help="Port for the Gradio server. Use 0 to pick a free port automatically.",
+    )
     parser.add_argument("--share", action="store_true", help="Share the Gradio app publicly.")
     args = parser.parse_args()
 
     _load_env_file()
+
+    env_host = os.environ.get("GRADIO_SERVER_NAME")
+    if env_host:
+        args.host = env_host
+    env_port = os.environ.get("GRADIO_SERVER_PORT")
+    if env_port and env_port.isdigit():
+        args.port = int(env_port)
 
     examples = [[prompt, args.model] for prompt in DEMO_REQUESTS]
 
@@ -213,7 +279,8 @@ def main() -> None:
         )
         chat.chatbot.label = "DexMCP"
 
-    demo.queue().launch(server_name=args.host, server_port=args.port, share=args.share)
+    port = _resolve_port(args.port)
+    demo.queue().launch(server_name=args.host, server_port=port, share=args.share)
 
 
 def _load_env_file() -> None:
@@ -226,14 +293,14 @@ def _load_env_file() -> None:
     with open(env_path, "r", encoding="utf-8") as handle:
         for raw_line in handle:
             line = raw_line.strip()
-    if not line or line.startswith("#"):
-        continue
-    if "=" in line:
-        key, value = line.split("=", 1)
-    elif ":" in line:
-        key, value = line.split(":", 1)
-    else:
-        continue
+            if not line or line.startswith("#"):
+                continue
+            if "=" in line:
+                key, value = line.split("=", 1)
+            elif ":" in line:
+                key, value = line.split(":", 1)
+            else:
+                continue
             key = key.strip()
             value = value.strip().strip('"').strip("'")
             if key and key not in os.environ:

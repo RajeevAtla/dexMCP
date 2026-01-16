@@ -12,6 +12,7 @@ dependencies = [
   "dspy-ai",
   "langchain<1",
   "langchain-openai<1",
+  "langchain-google-genai",
   "gradio",
 ]
 

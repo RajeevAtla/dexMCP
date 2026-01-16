@@ -98,7 +98,7 @@ The runtime requirements are `mcp` (for `FastMCP`), `pypokedex`, `requests`,
 ### Run the MCP server
 
 ```bash
-uv run python dexmcp/server.py
+uv run python -m dexmcp.server
 ```
 
 The server speaks MCP over stdio. Configure an MCP client to launch the command
@@ -168,6 +168,18 @@ Optionally select a different model or share a public link:
 
 ```bash
 uv run python gradio_demo.py --model gpt-4o-mini --share
+```
+
+### Gradio hot reload
+
+Use Gradio's reload mode to auto-restart on changes. On Windows, set
+`GRADIO_SERVER_NAME` and `GRADIO_SERVER_PORT` for the host/port:
+
+```bash
+set PYTHONPATH=C:\dexMCP
+set GRADIO_SERVER_NAME=127.0.0.1
+set GRADIO_SERVER_PORT=7860
+uv run gradio gradio_demo.py
 ```
 
 ## Testing

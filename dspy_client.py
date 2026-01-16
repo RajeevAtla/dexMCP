@@ -27,7 +27,7 @@ DEMO_REQUESTS = (
 # Create server parameters for stdio connection.
 server_params = StdioServerParameters(
     command="python",  # Executable
-    args=["dexmcp/server.py"],  # Optional command line arguments
+    args=["-m", "dexmcp.server"],  # Optional command line arguments
     env=None,  # Optional environment variables
 )
 

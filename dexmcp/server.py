@@ -186,3 +186,7 @@ def suggest_moveset(
     """
     # Delegate to the core helper for consistent behavior.
     return _suggest_moveset(name_or_dex, game=game, limit=limit, include_tm=include_tm)
+
+
+if __name__ == "__main__":
+    mcp.run()

@@ -38,7 +38,7 @@ DEMO_REQUESTS: Tuple[str, ...] = (
 # MCP server command configuration for stdio transport.
 SERVER_PARAMS = StdioServerParameters(
     command="python",
-    args=["dexmcp/server.py"],
+    args=["-m", "dexmcp.server"],
     env=None,
 )
 
