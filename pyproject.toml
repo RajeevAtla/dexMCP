@@ -10,8 +10,9 @@ dependencies = [
   "pydantic",
   "requests",
   "dspy-ai",
-  "langchain",
-  "langchain-openai",
+  "langchain<1",
+  "langchain-openai<1",
+  "gradio",
 ]
 
 [dependency-groups]

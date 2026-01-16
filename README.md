@@ -92,8 +92,8 @@ uv sync
 ```
 
 The runtime requirements are `mcp` (for `FastMCP`), `pypokedex`, `requests`,
-`dspy-ai`, `langchain`, `langchain-openai`, and the transitive `pydantic`
-dependency.
+`dspy-ai`, `langchain`, `langchain-openai`, `gradio`, and the transitive
+`pydantic` dependency.
 
 ### Run the MCP server
 
@@ -135,11 +135,6 @@ Add `--demo` alongside the prompt to run the canned sequence afterward.
 
 ### Example: run the LangChain demo agent
 
-If you prefer LangChain, install the optional packages:
-
-```bash
-```
-
 Ensure `OPENAI_API_KEY` (or another provider key supported by your LangChain
 LLM) is present in the environment. Then launch the demo:
 
@@ -158,6 +153,22 @@ uv run python langchain_client.py \
 ```
 
 Use `--demo` with a prompt to run it first before the guided walkthrough.
+
+### Example: run the Gradio demo
+
+The Gradio UI wraps the LangChain agent and calls DexMCP tools over stdio.
+Ensure `OPENAI_API_KEY` (or another provider key supported by your LangChain
+LLM) is set.
+
+```bash
+uv run python gradio_demo.py
+```
+
+Optionally select a different model or share a public link:
+
+```bash
+uv run python gradio_demo.py --model gpt-4o-mini --share
+```
 
 ## Testing
 
@@ -186,6 +197,7 @@ Pytest configuration (including coverage flags) lives in `pyproject.toml`.
 |-- assets/
 |   `-- logo.png           # Logo used in the README banner
 |-- dspy_client.py         # DSPy demo agent that consumes the server
+|-- gradio_demo.py         # Gradio + LangChain demo UI
 |-- langchain_client.py    # LangChain demo agent for the same tools
 |-- LICENSE.md             # MIT License
 |-- README.md
