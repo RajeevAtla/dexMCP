@@ -1,4 +1,8 @@
-"""Gradio demo that fronts DexMCP via a LangChain agent."""
+"""Gradio demo that fronts DexMCP via a LangChain agent.
+
+The UI runs a chat-style interface. Each user prompt is forwarded to a
+LangChain agent that calls MCP tools over stdio and returns a response.
+"""
 
 from __future__ import annotations
 
@@ -11,6 +15,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type
 
 def _ensure_core_types_shim() -> None:
+    """Install a lightweight core_types shim for Python 3.13."""
     # Gradio depends on rich, which imports core_types on Python 3.13.
     # Provide a lightweight shim to keep the demo importable.
     if "core_types" in sys.modules:
@@ -82,6 +87,14 @@ class ToolSpec:
 
 
 def _json_schema_to_annotation(schema: Dict[str, Any]) -> Type[Any]:
+    """Translate a JSON schema fragment into a Python type.
+
+    Args:
+        schema: JSON schema fragment for a single field.
+
+    Returns:
+        Python type annotation suitable for Pydantic models.
+    """
     schema_type = schema.get("type", "string")
     if schema_type == "array":
         items_schema = schema.get("items", {})
@@ -93,6 +106,14 @@ def _json_schema_to_annotation(schema: Dict[str, Any]) -> Type[Any]:
 
 
 def _build_args_model(tool: Tool) -> Type[BaseModel]:
+    """Create a Pydantic model for an MCP tool's input schema.
+
+    Args:
+        tool: MCP tool metadata.
+
+    Returns:
+        Pydantic model class to validate tool arguments.
+    """
     input_schema = getattr(tool, "input_schema", None) or getattr(tool, "inputSchema", None)
     properties = input_schema.get("properties", {}) if input_schema else {}
     required = set(input_schema.get("required", [])) if input_schema else set()
@@ -124,6 +145,14 @@ def _build_args_model(tool: Tool) -> Type[BaseModel]:
 
 
 def _format_content(content: Iterable[Any]) -> str:
+    """Render MCP tool results into a readable string.
+
+    Args:
+        content: Tool response content list.
+
+    Returns:
+        Human-readable text for display.
+    """
     parts: List[str] = []
     for item in content:
         if hasattr(item, "text") and getattr(item, "text"):
@@ -138,6 +167,14 @@ def _format_content(content: Iterable[Any]) -> str:
 
 
 async def _build_tool_specs(session: ClientSession) -> List[ToolSpec]:
+    """Fetch MCP tool metadata and build LangChain tool wrappers.
+
+    Args:
+        session: Active MCP client session.
+
+    Returns:
+        List of ToolSpec objects for LangChain.
+    """
     tool_listing = await session.list_tools()
     specs: List[ToolSpec] = []
 
@@ -163,6 +200,15 @@ async def _build_tool_specs(session: ClientSession) -> List[ToolSpec]:
 
 
 async def _run_agent(prompt: str, model: str) -> str:
+    """Run the LangChain agent against MCP tools for a single prompt.
+
+    Args:
+        prompt: User prompt to satisfy.
+        model: Model name to pass to the LLM wrapper.
+
+    Returns:
+        Final response text from the agent.
+    """
     gemini_key = os.environ.get("GEMINI_API_KEY")
     use_structured_chat = False
     if gemini_key:
@@ -176,6 +222,8 @@ async def _run_agent(prompt: str, model: str) -> str:
                 streaming=False,
             )
         else:
+            # Fallback to the OpenAI-compatible Gemini endpoint if the native client
+            # dependency is not available.
             base_url = os.environ.get(
                 "MODEL_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/"
             )
@@ -186,6 +234,7 @@ async def _run_agent(prompt: str, model: str) -> str:
                 api_key=gemini_key,
             )
     else:
+        # Non-Gemini path uses OpenAI-compatible settings.
         api_key = os.environ.get("OPENAI_API_KEY")
         llm = ChatOpenAI(model=model, temperature=0, api_key=api_key)
 
@@ -195,11 +244,13 @@ async def _run_agent(prompt: str, model: str) -> str:
             tool_specs = await _build_tool_specs(session)
             tools = [spec.structured_tool for spec in tool_specs]
 
+            # System prompt sets a consistent tool-usage policy.
             system_message = (
                 "You are DexMCP, a knowledgeable Pokedex assistant. Use the provided tools to satisfy requests. "
                 "Always cite tool results in concise natural language."
             )
             if use_structured_chat:
+                # Structured chat is compatible with multi-input tools and Gemini.
                 prompt_template = StructuredChatAgent.create_prompt(tools)
                 agent = StructuredChatAgent.from_llm_and_tools(
                     llm,
@@ -210,6 +261,7 @@ async def _run_agent(prompt: str, model: str) -> str:
                 result = await executor.ainvoke({"input": prompt})
                 return result.get("output", "<no output>")
 
+            # Tool-calling agent for OpenAI-style models.
             prompt_template = ChatPromptTemplate.from_messages(
                 [
                     ("system", system_message),
@@ -225,12 +277,30 @@ async def _run_agent(prompt: str, model: str) -> str:
 
 
 async def _chat_handler(message: str, history: list[tuple[str, str]], model: str) -> str:
+    """Gradio handler that routes a chat message through the agent.
+
+    Args:
+        message: User input text.
+        history: Chat history from Gradio (unused, but required by signature).
+        model: Selected model identifier from the UI.
+
+    Returns:
+        Agent response text.
+    """
     if not message.strip():
         return "Please enter a request."
     return await _run_agent(message, model=model)
 
 
 def _resolve_port(port: int) -> int:
+    """Resolve a port, picking a free one when requested.
+
+    Args:
+        port: Desired port (0 means auto-select).
+
+    Returns:
+        A port number to bind to.
+    """
     if port != 0:
         return port
     import socket
@@ -241,6 +311,7 @@ def _resolve_port(port: int) -> int:
 
 
 def main() -> None:
+    """Parse CLI flags, initialize the UI, and launch Gradio."""
     parser = argparse.ArgumentParser(description="Run the DexMCP LangChain + Gradio demo.")
     parser.add_argument(
         "--model",
@@ -257,8 +328,10 @@ def main() -> None:
     parser.add_argument("--share", action="store_true", help="Share the Gradio app publicly.")
     args = parser.parse_args()
 
+    # Load local .env values (if present) before configuring the app.
     _load_env_file()
 
+    # Gradio CLI uses env vars for host/port; support the same in script mode.
     env_host = os.environ.get("GRADIO_SERVER_NAME")
     if env_host:
         args.host = env_host
@@ -266,11 +339,13 @@ def main() -> None:
     if env_port and env_port.isdigit():
         args.port = int(env_port)
 
+    # Pre-populate example rows with the selected model.
     examples = [[prompt, args.model] for prompt in DEMO_REQUESTS]
 
     with gr.Blocks(title="DexMCP Gradio Demo") as demo:
         gr.Markdown("# DexMCP Gradio Demo\nAsk DexMCP anything about Pokemon data.")
         model_input = gr.Textbox(label="Model", value=args.model)
+        # ChatInterface wires the async handler to the chat UI.
         chat = gr.ChatInterface(
             fn=_chat_handler,
             additional_inputs=[model_input],

@@ -21,11 +21,12 @@ dev = [
   "pytest<9",
   "pytest-cov",
   "pytest-asyncio",
+  "pytest-xdist",
   "coverage",
   "ruff",
   "rumdl",
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra --cov=dexmcp --cov-report=term-missing"
+addopts = "-ra -n logical --cov=dexmcp --cov-report=term-missing"
 asyncio_mode = "auto"

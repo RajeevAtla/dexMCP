@@ -1,4 +1,8 @@
-"""DSPy client for exercising DexMCP tools over stdio."""
+"""DSPy client for exercising DexMCP tools over stdio.
+
+This script launches the MCP server as a subprocess, discovers its tools,
+and lets a DSPy ReAct agent choose the right tools for a user request.
+"""
 
 from __future__ import annotations
 
@@ -25,6 +29,7 @@ DEMO_REQUESTS = (
 )
 
 # Create server parameters for stdio connection.
+# Using "-m dexmcp.server" keeps imports stable across platforms.
 server_params = StdioServerParameters(
     command="python",  # Executable
     args=["-m", "dexmcp.server"],  # Optional command line arguments
@@ -35,7 +40,12 @@ server_params = StdioServerParameters(
 
 
 class DSPyPokedex(dspy.Signature):
-    """Signature for the DSPy agent that brokers DexMCP tools."""
+    """Signature for the DSPy agent that brokers DexMCP tools.
+
+    Attributes:
+        user_request: Natural language prompt from the user.
+        process_result: Agent response summarizing tool results.
+    """
 
     user_request: str = dspy.InputField()
     process_result: str = dspy.OutputField(
@@ -57,6 +67,7 @@ async def run_request(user_request: str) -> None:
         user_request: Natural language request to satisfy using DexMCP tools.
     """
     # Start the MCP server and create a client session over stdio.
+    # The stdio client manages the MCP subprocess lifecycle.
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
             # Establish the MCP session and discover available tools.

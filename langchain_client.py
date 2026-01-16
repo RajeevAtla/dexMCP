@@ -1,4 +1,8 @@
-"""LangChain client that adapts DexMCP tools into LangChain agents."""
+"""LangChain client that adapts DexMCP tools into LangChain agents.
+
+This script starts the MCP server, translates its tool schemas into
+LangChain StructuredTools, and runs a tool-calling agent over stdio.
+"""
 
 from __future__ import annotations
 
@@ -36,6 +40,7 @@ DEMO_REQUESTS: Tuple[str, ...] = (
 )
 
 # MCP server command configuration for stdio transport.
+# Using module mode avoids path issues on Windows.
 SERVER_PARAMS = StdioServerParameters(
     command="python",
     args=["-m", "dexmcp.server"],
