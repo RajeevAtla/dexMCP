@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-import dexmcp.dexmcp_server as server
+import dexmcp.server as server
 
 
 def test_get_pokemon_returns_expected_summary() -> None:

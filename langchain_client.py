@@ -34,7 +34,7 @@ DEMO_REQUESTS: Tuple[str, ...] = (
 
 SERVER_PARAMS = StdioServerParameters(
     command="python",
-    args=["dexmcp/dexmcp_server.py"],
+    args=["dexmcp/server.py"],
     env=None,
 )
 

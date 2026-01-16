@@ -98,7 +98,7 @@ dependency.
 ### Run the MCP server
 
 ```bash
-uv run python dexmcp/dexmcp_server.py
+uv run python dexmcp/server.py
 ```
 
 The server speaks MCP over stdio. Configure an MCP client to launch the command
@@ -182,11 +182,11 @@ Pytest configuration (including coverage flags) lives in `pyproject.toml`.
 |   |-- models.py          # Pydantic schemas
 |   |-- moveset.py         # Moveset recommendation logic
 |   |-- pokemon.py         # Core Pokemon lookup helpers
-|   |-- server.py          # FastMCP server and tool wrappers
-|   `-- dexmcp_server.py   # Backward-compatible entrypoint
+|   `-- server.py          # FastMCP server and tool wrappers
+|-- assets/
+|   `-- logo.png           # Logo used in the README banner
 |-- dspy_client.py         # DSPy demo agent that consumes the server
 |-- langchain_client.py    # LangChain demo agent for the same tools
-|-- logo.png               # Branding used in the README banner
 |-- LICENSE.md             # MIT License
 |-- README.md
 ```

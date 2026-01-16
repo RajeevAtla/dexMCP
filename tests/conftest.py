@@ -5,7 +5,6 @@ from typing import Any, Dict, Iterable, List, Optional
 import pytest
 
 import dexmcp.api as api
-import dexmcp.dexmcp_server as server
 
 
 @dataclass
