@@ -1,4 +1,8 @@
-"""Tests for DexMCP server tool wrappers."""
+"""Tests for DexMCP server tool wrappers.
+
+These tests validate that the MCP tool wrappers return the expected payloads
+and handle edge cases cleanly when data is missing or invalid inputs are used.
+"""
 
 import math
 
@@ -8,7 +12,10 @@ import dexmcp.server as server
 
 
 def test_get_pokemon_returns_expected_summary() -> None:
-    """Ensure Pokemon summary fields are populated."""
+    """Ensure Pokemon summary fields are populated.
+
+    Verifies core identifiers, typing, and a representative base stat field.
+    """
     # Act
     summary = server.get_pokemon("garchomp")
     # Assert
@@ -20,7 +27,10 @@ def test_get_pokemon_returns_expected_summary() -> None:
 
 
 def test_get_moves_returns_filtered_learnset() -> None:
-    """Verify move filtering by game identifier."""
+    """Verify move filtering by game identifier.
+
+    Ensures the wrapper reads the correct per-game learnset.
+    """
     # Act
     moves = server.get_moves("garchomp", game="omega-ruby-alpha-sapphire")
     # Assert
@@ -29,7 +39,10 @@ def test_get_moves_returns_filtered_learnset() -> None:
 
 
 def test_get_moves_handles_missing_game() -> None:
-    """Return an empty list when move data is missing."""
+    """Return an empty list when move data is missing.
+
+    Missing keys should degrade gracefully rather than raising.
+    """
     # Act
     moves = server.get_moves("garchomp", game="non-existent")
     # Assert
@@ -37,14 +50,20 @@ def test_get_moves_handles_missing_game() -> None:
 
 
 def test_get_sprites_validates_side() -> None:
-    """Validate sprite side inputs."""
+    """Validate sprite side inputs.
+
+    Ensures invalid sides raise a clear ValueError.
+    """
     # Act/Assert
     with pytest.raises(ValueError):
         server.get_sprites("garchomp", side="left")
 
 
 def test_get_sprites_returns_variant_url() -> None:
-    """Resolve sprite URLs for variants."""
+    """Resolve sprite URLs for variants.
+
+    Confirms the URL includes the variant name for shiny sprites.
+    """
     # Act
     sprite = server.get_sprites("garchomp", variant="shiny")
     # Assert
@@ -52,7 +71,10 @@ def test_get_sprites_returns_variant_url() -> None:
 
 
 def test_get_descriptions_respects_language() -> None:
-    """Return flavor text entries for the default language."""
+    """Return flavor text entries for the default language.
+
+    The stubbed descriptions should include a known game entry.
+    """
     # Act
     descriptions = server.get_descriptions("garchomp")
     # Assert
@@ -60,7 +82,10 @@ def test_get_descriptions_respects_language() -> None:
 
 
 def test_analyze_type_coverage_flags_ice_weakness() -> None:
-    """Highlight notable weaknesses in a coverage report."""
+    """Highlight notable weaknesses in a coverage report.
+
+    Ice should threaten a roster with Garchomp, Pikachu, and Gyarados.
+    """
     # Act
     report = server.analyze_type_coverage(["garchomp", "pikachu", "gyarados"])
     # Assert
@@ -70,7 +95,10 @@ def test_analyze_type_coverage_flags_ice_weakness() -> None:
 
 
 def test_explore_abilities_returns_effect_text() -> None:
-    """Return ability effect text for Pokemon abilities."""
+    """Return ability effect text for Pokemon abilities.
+
+    Validates that effect text is included and hidden ability flags are present.
+    """
     # Act
     abilities = server.explore_abilities("garchomp")
     # Assert
@@ -80,7 +108,10 @@ def test_explore_abilities_returns_effect_text() -> None:
 
 
 def test_plan_evolutions_lists_full_chain() -> None:
-    """Return at least one evolution path in the chain."""
+    """Return at least one evolution path in the chain.
+
+    Ensures evolution paths start and end with expected species.
+    """
     # Act
     report = server.plan_evolutions("garchomp")
     # Assert
@@ -91,7 +122,10 @@ def test_plan_evolutions_lists_full_chain() -> None:
 
 
 def test_find_encounters_groups_by_location() -> None:
-    """Group encounter details by location and version."""
+    """Group encounter details by location and version.
+
+    Confirms the first location entry matches the stubbed data.
+    """
     # Act
     report = server.find_encounters("garchomp")
     # Assert
@@ -102,7 +136,10 @@ def test_find_encounters_groups_by_location() -> None:
 
 
 def test_get_breeding_info_filters_egg_moves_by_game() -> None:
-    """Filter egg moves by game when requested."""
+    """Filter egg moves by game when requested.
+
+    Validates that the filtered egg move list matches the stubbed learnset.
+    """
     # Act
     info = server.get_breeding_info("garchomp", game="sun-moon")
     # Assert
@@ -112,7 +149,10 @@ def test_get_breeding_info_filters_egg_moves_by_game() -> None:
 
 
 def test_get_breeding_info_deduplicates_all_egg_moves() -> None:
-    """Deduplicate egg moves across games."""
+    """Deduplicate egg moves across games.
+
+    Ensures egg moves collected across games are unique and sorted.
+    """
     # Act
     info = server.get_breeding_info("garchomp")
     # Assert
@@ -120,7 +160,10 @@ def test_get_breeding_info_deduplicates_all_egg_moves() -> None:
 
 
 def test_suggest_moveset_prioritises_stab_and_physical() -> None:
-    """Prefer STAB physical moves when appropriate."""
+    """Prefer STAB physical moves when appropriate.
+
+    Confirms that the top move is a strong physical STAB option.
+    """
     # Act
     recommendation = server.suggest_moveset("garchomp", game="omega-ruby-alpha-sapphire", limit=3)
     # Assert
@@ -130,7 +173,10 @@ def test_suggest_moveset_prioritises_stab_and_physical() -> None:
 
 
 def test_suggest_moveset_errors_for_unknown_game() -> None:
-    """Raise a ValueError when move data is missing."""
+    """Raise a ValueError when move data is missing.
+
+    Unknown games should surface an explicit error rather than empty output.
+    """
     # Act/Assert
     with pytest.raises(ValueError):
         server.suggest_moveset("garchomp", game="unknown")

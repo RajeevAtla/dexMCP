@@ -1,4 +1,8 @@
-"""Pytest fixtures and stubs for DexMCP tests."""
+"""Pytest fixtures and stubs for DexMCP tests.
+
+These fixtures provide in-memory PokeAPI payloads so tests run quickly and
+deterministically without network access.
+"""
 
 from dataclasses import dataclass
 from types import SimpleNamespace
@@ -132,6 +136,7 @@ def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch: Pytest monkeypatch fixture.
     """
     # Build shared fixture data for the test registry.
+    # These stubs are used across multiple tests, so keep them consistent.
     base_stats = StubBaseStats(hp=108, attack=130, defense=95, sp_atk=80, sp_def=85, speed=102)
     garchomp_moves = {
         "omega-ruby-alpha-sapphire": [

@@ -1,4 +1,7 @@
-"""Targeted tests for dexmcp.moveset helpers."""
+"""Targeted tests for dexmcp.moveset helpers.
+
+These tests exercise filtering logic and scoring defaults in the heuristic.
+"""
 
 from __future__ import annotations
 
@@ -38,7 +41,12 @@ class DummyPokemon:
 
 
 def test_moveset_filters_and_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Exercise filtering and default scoring paths in moveset."""
+    """Exercise filtering and default scoring paths in moveset.
+
+    Ensures egg moves are skipped, invalid move data is ignored, and status
+    moves are excluded from recommendations.
+    """
+    # Build a learnset that hits multiple branches in the scoring loop.
     dummy_moves = [
         DummyMove("egg-move", "egg"),
         DummyMove("tm-move", "machine"),
@@ -48,9 +56,11 @@ def test_moveset_filters_and_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     ]
     dummy_pk = DummyPokemon("stubmon", ["normal"], {"demo-game": dummy_moves})
 
+    # Stub the Pokemon lookup to avoid network calls.
     def fake_lookup(_: str):
         return dummy_pk
 
+    # Provide move metadata that exercises status moves and missing data.
     def fake_move_data(name: str) -> Dict[str, object]:
         if name == "bad-move":
             raise ValueError("missing move")
@@ -63,5 +73,6 @@ def test_moveset_filters_and_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(api, "_lookup", fake_lookup)
     monkeypatch.setattr(api, "_get_move_data", fake_move_data)
 
+    # Only the default damaging move should survive filtering.
     result = moveset.suggest_moveset("stubmon", game="demo-game", include_tm=False)
     assert [move.name for move in result.recommendations] == ["powerless-move"]
