@@ -22,7 +22,7 @@ jobs:
         cache-python: "true"
 
     - name: Install dependencies
-      run: uv sync --group test
+      run: uv sync --group dev
 
     - name: Run tests
       run: uv run pytest

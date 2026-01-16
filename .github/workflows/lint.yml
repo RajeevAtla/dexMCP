@@ -26,8 +26,8 @@ jobs:
         save-cache: "true"
         cache-python: "true"
 
-    - name: Install lint dependencies
-      run: uv sync --group lint
+    - name: Install dev dependencies
+      run: uv sync --group dev
 
     - name: Lint
       run: |

@@ -169,7 +169,7 @@ Use `--demo` with a prompt to run it first before the guided walkthrough.
 ## Testing
 
 ```bash
-uv sync --group test
+uv sync --group dev
 uv run pytest
 ```
 

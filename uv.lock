@@ -647,15 +647,13 @@ langchain = [
 ]
 
 [package.dev-dependencies]
-lint = [
-    { name = "ruff" },
-    { name = "rumdl" },
-]
-test = [
+dev = [
     { name = "coverage" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
+    { name = "ruff" },
+    { name = "rumdl" },
 ]
 
 [package.metadata]
@@ -671,15 +669,13 @@ requires-dist = [
 provides-extras = ["dspy", "langchain"]
 
 [package.metadata.requires-dev]
-lint = [
-    { name = "ruff" },
-    { name = "rumdl" },
-]
-test = [
+dev = [
     { name = "coverage" },
     { name = "pytest", specifier = "<9" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
+    { name = "ruff" },
+    { name = "rumdl" },
 ]
 
 [[package]]

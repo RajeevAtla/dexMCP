@@ -21,13 +21,11 @@ langchain = [
 ]
 
 [dependency-groups]
-test = [
+dev = [
   "pytest<9",
   "pytest-cov",
   "pytest-asyncio",
   "coverage",
-]
-lint = [
   "ruff",
   "rumdl",
 ]
