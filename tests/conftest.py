@@ -1,3 +1,5 @@
+"""Pytest fixtures and stubs for DexMCP tests."""
+
 from dataclasses import dataclass
 from types import SimpleNamespace
 from typing import Any, Dict, Iterable, List, Optional
@@ -9,6 +11,8 @@ import dexmcp.api as api
 
 @dataclass
 class StubBaseStats:
+    """Stubbed base stats container."""
+
     hp: int
     attack: int
     defense: int
@@ -18,19 +22,38 @@ class StubBaseStats:
 
 
 class StubMove:
+    """Stubbed move entry used in tests."""
+
     def __init__(self, name: str, learn_method: str, level: Optional[int] = None) -> None:
+        """Initialize a stubbed move.
+
+        Args:
+            name: Move name.
+            learn_method: Learn method string (e.g., "level-up").
+            level: Optional level for level-up moves.
+        """
         self.name = name
         self.learn_method = learn_method
         self.level = level
 
 
 class StubSprites:
+    """Stubbed sprite mapping for front/back variants."""
+
     def __init__(self, front: Dict[str, Optional[str]], back: Dict[str, Optional[str]]) -> None:
+        """Initialize stubbed sprite dictionaries.
+
+        Args:
+            front: Front sprite variants keyed by variant name.
+            back: Back sprite variants keyed by variant name.
+        """
         self.front = front
         self.back = back
 
 
 class StubPokemon:
+    """Stubbed Pokemon payload used in tests."""
+
     def __init__(
         self,
         name: str,
@@ -44,6 +67,20 @@ class StubPokemon:
         weight_hg: int = 950,
         base_experience: int = 270,
     ) -> None:
+        """Initialize stubbed Pokemon data for tests.
+
+        Args:
+            name: Pokemon name.
+            dex: National dex number.
+            types: Iterable of type names.
+            base_stats: Base stat values.
+            moves: Mapping of game identifiers to move lists.
+            abilities: Iterable of ability data stubs.
+            descriptions: Mapping of language to version descriptions.
+            height_dm: Height in decimeters.
+            weight_hg: Weight in hectograms.
+            base_experience: Base experience value.
+        """
         self.name = name
         self.dex = dex
         self.types = tuple(types)
@@ -66,11 +103,20 @@ class StubPokemon:
         )
 
     def get_descriptions(self, language: str = "en") -> Dict[str, str]:
+        """Return language-specific descriptions for the stub.
+
+        Args:
+            language: Language code to retrieve.
+
+        Returns:
+            Mapping of version to description text.
+        """
         return self._descriptions.get(language, {})
 
 
 @pytest.fixture(autouse=True)
 def reset_caches() -> None:
+    """Clear API caches before each test run."""
     api._cached_fetch.cache_clear()
     api._list_all_types.cache_clear()
     api._get_type_relations.cache_clear()
@@ -79,6 +125,11 @@ def reset_caches() -> None:
 
 @pytest.fixture(autouse=True)
 def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Stub external API calls and pypokedex lookups.
+
+    Args:
+        monkeypatch: Pytest monkeypatch fixture.
+    """
     base_stats = StubBaseStats(hp=108, attack=130, defense=95, sp_atk=80, sp_def=85, speed=102)
     garchomp_moves = {
         "omega-ruby-alpha-sapphire": [
@@ -151,6 +202,18 @@ def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
     }
 
     def fake_get(*, name: Optional[str] = None, dex: Optional[int] = None):
+        """Return stubbed Pokemon objects based on name or dex.
+
+        Args:
+            name: Optional Pokemon name to look up.
+            dex: Optional dex number to look up.
+
+        Returns:
+            Stubbed Pokemon instance.
+
+        Raises:
+            ValueError: If the Pokemon identifier is not found.
+        """
         if name is not None:
             key = name.lower()
             if key in pokemon_registry:
@@ -357,6 +420,15 @@ def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
     }
 
     def fake_fetch_json(url: str, context: str) -> Dict[str, Any]:
+        """Return stubbed PokeAPI payloads for known URLs.
+
+        Args:
+            url: URL requested by the code under test.
+            context: Context string used by the caller.
+
+        Returns:
+            Stubbed JSON payload for the requested endpoint.
+        """
         if url.endswith("/type"):
             return {"results": [{"name": t} for t in type_list]}
         if "/type/" in url:
@@ -390,6 +462,7 @@ def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.fixture
 def pokemon_registry() -> Dict[str, StubPokemon]:
+    """Expose a minimal registry for tests that inspect fixtures."""
     # Expose registry for tests that need to inspect raw fixtures.
     base_stats = StubBaseStats(hp=108, attack=130, defense=95, sp_atk=80, sp_def=85, speed=102)
     garchomp_moves = {

@@ -1,3 +1,5 @@
+"""Pydantic models for DexMCP tool inputs and outputs."""
+
 from __future__ import annotations
 
 from typing import Dict, List, Optional
@@ -6,6 +8,8 @@ from pydantic import BaseModel, Field
 
 
 class BaseStats(BaseModel):
+    """Base stat block for a Pokemon."""
+
     hp: int
     attack: int
     defense: int
@@ -15,6 +19,8 @@ class BaseStats(BaseModel):
 
 
 class PokemonSummary(BaseModel):
+    """High-level Pokemon summary used by tool responses."""
+
     dex: int = Field(description="National Pokedex number")
     name: str
     types: List[str]
@@ -27,12 +33,16 @@ class PokemonSummary(BaseModel):
 
 
 class Move(BaseModel):
+    """Move learnset entry for a Pokemon."""
+
     name: str
     learn_method: str
     level: Optional[int] = None
 
 
 class SpriteURL(BaseModel):
+    """Sprite URL metadata for a Pokemon."""
+
     url: Optional[str] = Field(
         description="Direct URL to a sprite image (may be None if unavailable)"
     )
@@ -43,6 +53,8 @@ class SpriteURL(BaseModel):
 
 
 class TypeMatchupSummary(BaseModel):
+    """Defensive matchup counts for a single attacking type."""
+
     attack_type: str
     weak: int = Field(description="Team members that take >1x damage from this type")
     resistant: int = Field(description="Team members that take <1x damage")
@@ -51,6 +63,8 @@ class TypeMatchupSummary(BaseModel):
 
 
 class TypeCoverageReport(BaseModel):
+    """Summary of defensive coverage for a roster."""
+
     team: List[str]
     matchup_summary: List[TypeMatchupSummary]
     notable_weaknesses: List[str] = Field(
@@ -62,6 +76,8 @@ class TypeCoverageReport(BaseModel):
 
 
 class AbilityDetail(BaseModel):
+    """Detailed ability info with effect text."""
+
     name: str
     is_hidden: bool
     short_effect: Optional[str]
@@ -69,11 +85,15 @@ class AbilityDetail(BaseModel):
 
 
 class AbilityExplorerResult(BaseModel):
+    """Ability listing for a Pokemon."""
+
     pokemon: str
     abilities: List[AbilityDetail]
 
 
 class EvolutionStep(BaseModel):
+    """Single evolution transition with trigger metadata."""
+
     from_species: str
     to_species: str
     trigger: Optional[str]
@@ -83,15 +103,21 @@ class EvolutionStep(BaseModel):
 
 
 class EvolutionPath(BaseModel):
+    """Ordered evolution steps forming one path in the chain."""
+
     steps: List[EvolutionStep]
 
 
 class EvolutionReport(BaseModel):
+    """Collection of evolution paths for a Pokemon."""
+
     pokemon: str
     paths: List[EvolutionPath]
 
 
 class EncounterDetail(BaseModel):
+    """Encounter method details for a specific version entry."""
+
     method: str
     min_level: int
     max_level: int
@@ -100,27 +126,37 @@ class EncounterDetail(BaseModel):
 
 
 class EncounterVersion(BaseModel):
+    """Encounter details for a single game version."""
+
     version: str
     max_chance: int
     details: List[EncounterDetail]
 
 
 class EncounterLocation(BaseModel):
+    """Encounter information for a specific location area."""
+
     location_area: str
     versions: List[EncounterVersion]
 
 
 class EncounterReport(BaseModel):
+    """Encounter locations grouped by area and version."""
+
     pokemon: str
     locations: List[EncounterLocation]
 
 
 class GenderRatio(BaseModel):
+    """Gender ratio percentages for a Pokemon."""
+
     female_percent: float
     male_percent: float
 
 
 class BreedingInfo(BaseModel):
+    """Breeding metadata including egg groups and egg moves."""
+
     pokemon: str
     egg_groups: List[str]
     gender: GenderRatio
@@ -129,6 +165,8 @@ class BreedingInfo(BaseModel):
 
 
 class MoveRecommendation(BaseModel):
+    """Move recommendation metadata and scoring."""
+
     name: str
     move_type: Optional[str]
     power: Optional[int]
@@ -143,6 +181,8 @@ class MoveRecommendation(BaseModel):
 
 
 class MovesetRecommendation(BaseModel):
+    """Ranked moveset recommendations for a Pokemon."""
+
     pokemon: str
     game: str
     recommendations: List[MoveRecommendation]

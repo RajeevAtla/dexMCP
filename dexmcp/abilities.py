@@ -1,3 +1,5 @@
+"""Ability lookup helpers."""
+
 from __future__ import annotations
 
 from typing import List
@@ -7,7 +9,14 @@ from .models import AbilityDetail, AbilityExplorerResult
 
 
 def explore_abilities(name_or_dex: str) -> AbilityExplorerResult:
-    """Return detailed ability information with effect text pulled from PokeAPI."""
+    """Return detailed ability information with effect text.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+
+    Returns:
+        Ability details including hidden ability flags and effect text.
+    """
     # Fetch each ability's effect text directly from PokeAPI so clients do not need a second integration.
     pk = api._lookup(name_or_dex)
     abilities: List[AbilityDetail] = []

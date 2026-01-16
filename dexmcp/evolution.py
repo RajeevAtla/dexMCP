@@ -1,3 +1,5 @@
+"""Evolution chain traversal helpers."""
+
 from __future__ import annotations
 
 from typing import Dict, List, Optional
@@ -11,6 +13,13 @@ def _expand_chain(
     current_path: List[EvolutionStep],
     all_paths: List[EvolutionPath],
 ) -> None:
+    """Traverse evolution chain nodes and collect full paths.
+
+    Args:
+        node: Current chain node from the PokeAPI evolution tree.
+        current_path: Accumulated steps for the current path.
+        all_paths: Collector for all discovered evolution paths.
+    """
     # Depth-first traversal that collects every evolution path through the chain graph.
     species_name = node["species"]["name"]
     evolves_to = node.get("evolves_to", [])
@@ -45,7 +54,14 @@ def _expand_chain(
 
 
 def plan_evolutions(name_or_dex: str) -> EvolutionReport:
-    """Enumerate evolution paths for the given Pokemon."""
+    """Enumerate evolution paths for the given Pokemon.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+
+    Returns:
+        Evolution paths with trigger and condition metadata.
+    """
     pk = api._lookup(name_or_dex)
     species_data = api._fetch_json(
         f"https://pokeapi.co/api/v2/pokemon-species/{pk.dex}",

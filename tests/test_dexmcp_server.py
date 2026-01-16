@@ -1,3 +1,5 @@
+"""Tests for DexMCP server tool wrappers."""
+
 import math
 
 import pytest
@@ -6,6 +8,7 @@ import dexmcp.server as server
 
 
 def test_get_pokemon_returns_expected_summary() -> None:
+    """Ensure Pokemon summary fields are populated."""
     summary = server.get_pokemon("garchomp")
     assert summary.dex == 445
     assert summary.name == "garchomp"
@@ -15,32 +18,38 @@ def test_get_pokemon_returns_expected_summary() -> None:
 
 
 def test_get_moves_returns_filtered_learnset() -> None:
+    """Verify move filtering by game identifier."""
     moves = server.get_moves("garchomp", game="omega-ruby-alpha-sapphire")
     names = {move.name for move in moves}
     assert {"dragon-claw", "earthquake", "stone-edge", "swords-dance"} == names
 
 
 def test_get_moves_handles_missing_game() -> None:
+    """Return an empty list when move data is missing."""
     moves = server.get_moves("garchomp", game="non-existent")
     assert moves == []
 
 
 def test_get_sprites_validates_side() -> None:
+    """Validate sprite side inputs."""
     with pytest.raises(ValueError):
         server.get_sprites("garchomp", side="left")
 
 
 def test_get_sprites_returns_variant_url() -> None:
+    """Resolve sprite URLs for variants."""
     sprite = server.get_sprites("garchomp", variant="shiny")
     assert sprite.url.endswith("front-shiny.png")
 
 
 def test_get_descriptions_respects_language() -> None:
+    """Return flavor text entries for the default language."""
     descriptions = server.get_descriptions("garchomp")
     assert "omega-ruby" in descriptions
 
 
 def test_analyze_type_coverage_flags_ice_weakness() -> None:
+    """Highlight notable weaknesses in a coverage report."""
     report = server.analyze_type_coverage(["garchomp", "pikachu", "gyarados"])
     matchup = next(entry for entry in report.matchup_summary if entry.attack_type == "ice")
     assert matchup.weak >= 1
@@ -48,6 +57,7 @@ def test_analyze_type_coverage_flags_ice_weakness() -> None:
 
 
 def test_explore_abilities_returns_effect_text() -> None:
+    """Return ability effect text for Pokemon abilities."""
     abilities = server.explore_abilities("garchomp")
     sand_veil = next(entry for entry in abilities.abilities if entry.name == "sand-veil")
     assert sand_veil.short_effect.startswith("Raises evasion")
@@ -55,6 +65,7 @@ def test_explore_abilities_returns_effect_text() -> None:
 
 
 def test_plan_evolutions_lists_full_chain() -> None:
+    """Return at least one evolution path in the chain."""
     report = server.plan_evolutions("garchomp")
     assert report.paths, "Expected at least one evolution path"
     steps = report.paths[0].steps
@@ -63,6 +74,7 @@ def test_plan_evolutions_lists_full_chain() -> None:
 
 
 def test_find_encounters_groups_by_location() -> None:
+    """Group encounter details by location and version."""
     report = server.find_encounters("garchomp")
     assert report.locations[0].location_area == "victory-road"
     version = report.locations[0].versions[0]
@@ -71,6 +83,7 @@ def test_find_encounters_groups_by_location() -> None:
 
 
 def test_get_breeding_info_filters_egg_moves_by_game() -> None:
+    """Filter egg moves by game when requested."""
     info = server.get_breeding_info("garchomp", game="sun-moon")
     assert info.egg_groups == ["monster", "dragon"]
     assert info.egg_moves == ["hydro-pump", "iron-tail"]
@@ -78,11 +91,13 @@ def test_get_breeding_info_filters_egg_moves_by_game() -> None:
 
 
 def test_get_breeding_info_deduplicates_all_egg_moves() -> None:
+    """Deduplicate egg moves across games."""
     info = server.get_breeding_info("garchomp")
     assert info.egg_moves == ["hydro-pump", "iron-tail"]
 
 
 def test_suggest_moveset_prioritises_stab_and_physical() -> None:
+    """Prefer STAB physical moves when appropriate."""
     recommendation = server.suggest_moveset("garchomp", game="omega-ruby-alpha-sapphire", limit=3)
     move_names = [move.name for move in recommendation.recommendations]
     assert move_names[0] == "earthquake"
@@ -90,5 +105,6 @@ def test_suggest_moveset_prioritises_stab_and_physical() -> None:
 
 
 def test_suggest_moveset_errors_for_unknown_game() -> None:
+    """Raise a ValueError when move data is missing."""
     with pytest.raises(ValueError):
         server.suggest_moveset("garchomp", game="unknown")

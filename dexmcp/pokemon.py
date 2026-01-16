@@ -1,3 +1,5 @@
+"""Pokemon lookup helpers used by MCP tool wrappers."""
+
 from __future__ import annotations
 
 from typing import Dict, List, Optional
@@ -7,9 +9,13 @@ from .models import BaseStats, Move, PokemonSummary, SpriteURL
 
 
 def get_pokemon(name_or_dex: str) -> PokemonSummary:
-    """
-    Look up a Pokemon by name (e.g., 'garchomp') or dex number (e.g., '445').
-    Returns core stats, types, height/weight (with metric conversions), and base experience.
+    """Look up a Pokemon and return summary stats.
+
+    Args:
+        name_or_dex: Pokemon name (e.g., "garchomp") or dex number (e.g., "445").
+
+    Returns:
+        Summary stats, typing, measurements, and base experience.
     """
     pk = api._lookup(name_or_dex)
 
@@ -38,8 +44,14 @@ def get_pokemon(name_or_dex: str) -> PokemonSummary:
 
 
 def get_moves(name_or_dex: str, game: str) -> List[Move]:
-    """
-    List the moves a Pokemon can learn in a specific PokeAPI game identifier (e.g., 'scarlet-violet', 'sword-shield').
+    """List the moves a Pokemon can learn in a given game.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+        game: PokeAPI game identifier (e.g., "scarlet-violet").
+
+    Returns:
+        Moves learnable in the requested game.
     """
     pk = api._lookup(name_or_dex)
     # pypokedex exposes move data keyed by game identifier (e.g., 'scarlet-violet'). Missing keys return [].
@@ -48,10 +60,18 @@ def get_moves(name_or_dex: str, game: str) -> List[Move]:
 
 
 def get_sprites(name_or_dex: str, side: str = "front", variant: str = "default") -> SpriteURL:
-    """
-    Return a direct URL to a sprite. side: 'front' or 'back'.
-    variant: typically one of 'default', 'shiny', 'female', 'female_shiny'.
-    (Availability varies by Pokemon.)
+    """Return a direct URL to a Pokemon sprite.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+        side: Sprite side ("front" or "back").
+        variant: Sprite variant (e.g., "default", "shiny", "female").
+
+    Returns:
+        Sprite URL metadata for the requested variant.
+
+    Raises:
+        ValueError: If the sprite side is not "front" or "back".
     """
     if side not in {"front", "back"}:
         # Validate inputs early so downstream tooling gets actionable errors.
@@ -65,8 +85,14 @@ def get_sprites(name_or_dex: str, side: str = "front", variant: str = "default")
 
 
 def get_descriptions(name_or_dex: str, language: str = "en") -> Dict[str, str]:
-    """
-    Return flavor-text descriptions (version -> text) in the requested language.
+    """Return flavor text descriptions in the requested language.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+        language: Language code for the flavor text.
+
+    Returns:
+        Mapping of game version to flavor text.
     """
     pk = api._lookup(name_or_dex)
     # Flavor text comes from multiple game entries; keep the raw mapping so clients can pick the ones they need.

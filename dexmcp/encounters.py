@@ -1,3 +1,5 @@
+"""Encounter lookup helpers for PokeAPI data."""
+
 from __future__ import annotations
 
 from typing import List
@@ -7,7 +9,14 @@ from .models import EncounterDetail, EncounterLocation, EncounterReport, Encount
 
 
 def find_encounters(name_or_dex: str) -> EncounterReport:
-    """Retrieve wild encounter locations from PokeAPI."""
+    """Retrieve wild encounter locations from PokeAPI.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+
+    Returns:
+        Encounter report grouped by location and game version.
+    """
     # Useful for players planning hunts or resource runs in a specific game version.
     pk = api._lookup(name_or_dex)
     data = api._fetch_json(

@@ -1,3 +1,5 @@
+"""Expose FastMCP tools for Pokedex lookups and analysis."""
+
 from __future__ import annotations
 
 from mcp.server.fastmcp import FastMCP
@@ -34,46 +36,123 @@ mcp = FastMCP("DexMCP Server")
 
 @mcp.tool()
 def get_pokemon(name_or_dex: str) -> PokemonSummary:
+    """Fetch a Pokemon summary for the given identifier.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+
+    Returns:
+        Summary stats, typing, and measurements for the Pokemon.
+    """
     return _get_pokemon(name_or_dex)
 
 
 @mcp.tool()
 def get_moves(name_or_dex: str, game: str) -> list[Move]:
+    """List the learnset for a Pokemon in a specific game.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+        game: PokeAPI game identifier (e.g., "scarlet-violet").
+
+    Returns:
+        Moves the Pokemon can learn in the requested game.
+    """
     return _get_moves(name_or_dex, game)
 
 
 @mcp.tool()
 def get_sprites(name_or_dex: str, side: str = "front", variant: str = "default") -> SpriteURL:
+    """Resolve a sprite URL for a Pokemon.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+        side: Sprite side ("front" or "back").
+        variant: Sprite variant (e.g., "default", "shiny").
+
+    Returns:
+        Sprite URL with the requested side and variant.
+    """
     return _get_sprites(name_or_dex, side=side, variant=variant)
 
 
 @mcp.tool()
 def get_descriptions(name_or_dex: str, language: str = "en") -> dict[str, str]:
+    """Fetch localized Pokedex flavor text.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+        language: Language code for flavor text.
+
+    Returns:
+        Mapping of game version to flavor text.
+    """
     return _get_descriptions(name_or_dex, language=language)
 
 
 @mcp.tool()
 def analyze_type_coverage(names_or_dexes: list[str]) -> TypeCoverageReport:
+    """Summarize defensive type coverage for a roster.
+
+    Args:
+        names_or_dexes: Pokemon names or dex numbers to analyze.
+
+    Returns:
+        Coverage report with matchup counts and notable weaknesses.
+    """
     return _analyze_type_coverage(names_or_dexes)
 
 
 @mcp.tool()
 def explore_abilities(name_or_dex: str) -> AbilityExplorerResult:
+    """Retrieve ability details for a Pokemon.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+
+    Returns:
+        Ability names and effect text details.
+    """
     return _explore_abilities(name_or_dex)
 
 
 @mcp.tool()
 def plan_evolutions(name_or_dex: str) -> EvolutionReport:
+    """Enumerate evolution paths that include the Pokemon.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+
+    Returns:
+        Evolution paths and triggers.
+    """
     return _plan_evolutions(name_or_dex)
 
 
 @mcp.tool()
 def find_encounters(name_or_dex: str) -> EncounterReport:
+    """Find wild encounter locations for a Pokemon.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+
+    Returns:
+        Encounter locations grouped by version and method.
+    """
     return _find_encounters(name_or_dex)
 
 
 @mcp.tool()
 def get_breeding_info(name_or_dex: str, game: str | None = None) -> BreedingInfo:
+    """Summarize breeding details for a Pokemon.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+        game: Optional game identifier for egg move filtering.
+
+    Returns:
+        Breeding info including egg groups, hatch steps, and egg moves.
+    """
     return _get_breeding_info(name_or_dex, game=game)
 
 
@@ -84,4 +163,15 @@ def suggest_moveset(
     limit: int = 4,
     include_tm: bool = False,
 ) -> MovesetRecommendation:
+    """Recommend a moveset for a Pokemon in a game.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+        game: PokeAPI game identifier to scope learnsets.
+        limit: Maximum number of recommendations to return.
+        include_tm: Whether to include TM moves.
+
+    Returns:
+        Ranked move recommendations based on simple heuristics.
+    """
     return _suggest_moveset(name_or_dex, game=game, limit=limit, include_tm=include_tm)

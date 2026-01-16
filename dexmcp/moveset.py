@@ -1,3 +1,5 @@
+"""Moveset recommendation logic and heuristics."""
+
 from __future__ import annotations
 
 from typing import List
@@ -13,7 +15,20 @@ def suggest_moveset(
     limit: int = 4,
     include_tm: bool = False,
 ) -> MovesetRecommendation:
-    """Recommend high-impact moves for a Pokemon in a given game using simple heuristics."""
+    """Recommend high-impact moves using a simple heuristic.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+        game: PokeAPI game identifier to scope the learnset.
+        limit: Maximum number of moves to return.
+        include_tm: Whether to include TM moves in the candidate pool.
+
+    Returns:
+        Ranked moveset recommendations for the Pokemon.
+
+    Raises:
+        ValueError: If the game has no move data for the Pokemon.
+    """
     pk = api._lookup(name_or_dex)
     moves = pk.moves.get(game)
     if moves is None:

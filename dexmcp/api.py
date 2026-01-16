@@ -1,3 +1,5 @@
+"""Shared API helpers for PokeAPI and pypokedex access."""
+
 from __future__ import annotations
 
 from functools import lru_cache
@@ -14,6 +16,18 @@ IGNORED_TYPES = {"unknown", "shadow"}
 
 @lru_cache(maxsize=256)
 def _cached_fetch(url: str) -> Dict:
+    """Fetch JSON data from a URL with caching.
+
+    Args:
+        url: PokeAPI URL to request.
+
+    Returns:
+        Parsed JSON response data.
+
+    Raises:
+        requests.RequestException: If the HTTP request fails.
+        ValueError: If the response cannot be decoded as JSON.
+    """
     # Cache raw HTTP responses so repeated tooling calls do not spam the public API.
     response = requests.get(url, timeout=10)
     response.raise_for_status()
@@ -21,6 +35,18 @@ def _cached_fetch(url: str) -> Dict:
 
 
 def _fetch_json(url: str, context: str) -> Dict:
+    """Fetch JSON data and wrap errors with context.
+
+    Args:
+        url: PokeAPI URL to request.
+        context: Description used for error messages.
+
+    Returns:
+        Parsed JSON response data.
+
+    Raises:
+        ValueError: If the request fails or JSON decoding fails.
+    """
     try:
         return _cached_fetch(url)
     except (requests.RequestException, ValueError) as exc:
@@ -28,7 +54,17 @@ def _fetch_json(url: str, context: str) -> Dict:
 
 
 def _lookup(name_or_dex: str):
-    """Internal helper to fetch a pypokedex.Pokemon by name (case-insensitive) or dex number."""
+    """Fetch a pypokedex.Pokemon by name or dex number.
+
+    Args:
+        name_or_dex: Pokemon name (case-insensitive) or dex number.
+
+    Returns:
+        The pypokedex Pokemon object.
+
+    Raises:
+        ValueError: If the Pokemon cannot be found.
+    """
     # pypokedex caches responses locally, so repeat lookups avoid hitting the public API.
     try:
         if name_or_dex.isdigit():
@@ -41,6 +77,11 @@ def _lookup(name_or_dex: str):
 
 @lru_cache(maxsize=1)
 def _list_all_types() -> List[str]:
+    """Return the canonical list of Pokemon types.
+
+    Returns:
+        Sorted list of type names excluding ignored types.
+    """
     # Grab the canonical list of types once per process; the result drives coverage math.
     data = _fetch_json("https://pokeapi.co/api/v2/type", context="type listing")
     types = [entry["name"] for entry in data.get("results", [])]
@@ -49,6 +90,14 @@ def _list_all_types() -> List[str]:
 
 @lru_cache(maxsize=64)
 def _get_type_relations(type_name: str) -> Dict[str, List[str]]:
+    """Fetch type matchup relations from PokeAPI.
+
+    Args:
+        type_name: Type name to look up.
+
+    Returns:
+        Mapping of damage relation keys to lists of type names.
+    """
     data = _fetch_json(
         f"https://pokeapi.co/api/v2/type/{type_name.lower()}",
         context=f"type data for {type_name}",
@@ -66,6 +115,14 @@ def _get_type_relations(type_name: str) -> Dict[str, List[str]]:
 
 @lru_cache(maxsize=64)
 def _get_move_data(move_name: str) -> Dict:
+    """Fetch move metadata from PokeAPI.
+
+    Args:
+        move_name: Move name to look up.
+
+    Returns:
+        Move metadata payload from PokeAPI.
+    """
     return _fetch_json(
         f"https://pokeapi.co/api/v2/move/{move_name.lower()}",
         context=f"move data for {move_name}",
@@ -73,6 +130,14 @@ def _get_move_data(move_name: str) -> Dict:
 
 
 def _extract_short_effect(entries: List[Dict]) -> str | None:
+    """Extract the English short effect entry.
+
+    Args:
+        entries: List of effect entries from PokeAPI.
+
+    Returns:
+        English short effect text, if available.
+    """
     for entry in entries:
         if entry.get("language", {}).get("name") == "en":
             return entry.get("short_effect")
@@ -80,6 +145,14 @@ def _extract_short_effect(entries: List[Dict]) -> str | None:
 
 
 def _extract_effect(entries: List[Dict]) -> str | None:
+    """Extract the English effect entry.
+
+    Args:
+        entries: List of effect entries from PokeAPI.
+
+    Returns:
+        English effect text, if available.
+    """
     for entry in entries:
         if entry.get("language", {}).get("name") == "en":
             return entry.get("effect")

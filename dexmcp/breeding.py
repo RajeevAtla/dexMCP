@@ -1,3 +1,5 @@
+"""Breeding-related helpers for egg groups and moves."""
+
 from __future__ import annotations
 
 from typing import List, Optional
@@ -7,6 +9,14 @@ from .models import BreedingInfo, GenderRatio
 
 
 def _gender_from_rate(gender_rate: int) -> GenderRatio:
+    """Convert the PokeAPI gender rate into percentages.
+
+    Args:
+        gender_rate: PokeAPI gender rate (-1 for genderless, 0-8 otherwise).
+
+    Returns:
+        Female and male percentages for the species.
+    """
     if gender_rate == -1:
         return GenderRatio(female_percent=0.0, male_percent=0.0)
     female = (gender_rate / 8.0) * 100.0
@@ -15,7 +25,15 @@ def _gender_from_rate(gender_rate: int) -> GenderRatio:
 
 
 def get_breeding_info(name_or_dex: str, game: Optional[str] = None) -> BreedingInfo:
-    """Summarize egg groups, hatch steps, gender ratio, and egg moves."""
+    """Summarize egg groups, hatch steps, gender ratio, and egg moves.
+
+    Args:
+        name_or_dex: Pokemon name or national dex number.
+        game: Optional game identifier to filter egg moves.
+
+    Returns:
+        Breeding metadata for the Pokemon.
+    """
     # Combines species metadata with move learnsets so breeders see everything in one response.
     pk = api._lookup(name_or_dex)
     species_data = api._fetch_json(

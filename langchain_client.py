@@ -1,3 +1,5 @@
+"""LangChain client that adapts DexMCP tools into LangChain agents."""
+
 from __future__ import annotations
 
 import argparse
@@ -56,6 +58,14 @@ class ToolSpec:
 
 
 def _json_schema_to_annotation(schema: Dict[str, Any]) -> Type[Any]:
+    """Convert a JSON schema fragment into a Python type annotation.
+
+    Args:
+        schema: JSON schema dictionary describing a field.
+
+    Returns:
+        Python type annotation for the schema.
+    """
     schema_type = schema.get("type", "string")
     if schema_type == "array":
         items_schema = schema.get("items", {})
@@ -67,6 +77,14 @@ def _json_schema_to_annotation(schema: Dict[str, Any]) -> Type[Any]:
 
 
 def _build_args_model(tool: Tool) -> Type[BaseModel]:
+    """Build a Pydantic model from an MCP tool input schema.
+
+    Args:
+        tool: MCP tool metadata with input schema.
+
+    Returns:
+        A dynamically created Pydantic model for tool arguments.
+    """
     properties = tool.input_schema.get("properties", {}) if tool.input_schema else {}
     required = set(tool.input_schema.get("required", [])) if tool.input_schema else set()
 
@@ -97,6 +115,14 @@ def _build_args_model(tool: Tool) -> Type[BaseModel]:
 
 
 def _format_content(content: Iterable[Any]) -> str:
+    """Convert MCP tool result content into printable text.
+
+    Args:
+        content: MCP tool content objects.
+
+    Returns:
+        Formatted string representation of the content.
+    """
     parts: List[str] = []
     for item in content:
         if hasattr(item, "text") and getattr(item, "text"):
@@ -111,6 +137,14 @@ def _format_content(content: Iterable[Any]) -> str:
 
 
 async def _build_tool_specs(session: ClientSession) -> List[ToolSpec]:
+    """Load MCP tools and convert them into LangChain tools.
+
+    Args:
+        session: Active MCP client session.
+
+    Returns:
+        Tool specification entries for LangChain.
+    """
     tool_listing = await session.list_tools()
     specs: List[ToolSpec] = []
 
@@ -136,6 +170,12 @@ async def _build_tool_specs(session: ClientSession) -> List[ToolSpec]:
 
 
 async def run_agent(prompt: str, model: str) -> None:
+    """Run a LangChain agent against DexMCP tools.
+
+    Args:
+        prompt: Natural language request for the agent.
+        model: Model identifier for the ChatOpenAI wrapper.
+    """
     llm = ChatOpenAI(model=model, temperature=0)
 
     async with stdio_client(SERVER_PARAMS) as (read, write):
@@ -163,12 +203,19 @@ async def run_agent(prompt: str, model: str) -> None:
 
 
 def run_demo(prompts: Iterable[str], model: str) -> None:
+    """Run a series of demo prompts through the agent.
+
+    Args:
+        prompts: Demo prompts to execute.
+        model: Model identifier for the ChatOpenAI wrapper.
+    """
     for prompt in prompts:
         print("\n=== {} ===".format(prompt))
         asyncio.run(run_agent(prompt, model=model))
 
 
 def main() -> None:
+    """Parse CLI arguments and run the LangChain demo or prompt."""
     parser = argparse.ArgumentParser(description="Run the DexMCP LangChain demo client.")
     parser.add_argument(
         "prompt",

@@ -1,3 +1,5 @@
+"""DSPy client for exercising DexMCP tools over stdio."""
+
 from __future__ import annotations
 
 import argparse
@@ -33,7 +35,7 @@ server_params = StdioServerParameters(
 
 
 class DSPyPokedex(dspy.Signature):
-    """You are an agentic pokedex. Choose and chain the right tools to satisfy user requests."""
+    """Signature for the DSPy agent that brokers DexMCP tools."""
 
     user_request: str = dspy.InputField()
     process_result: str = dspy.OutputField(
@@ -49,7 +51,11 @@ dspy.configure(lm=dspy.LM("gemini/gemini-2.5-flash"))
 
 
 async def run_request(user_request: str) -> None:
-    """Connect to the MCP server, expose its tools to DSPy, and run a ReAct plan."""
+    """Connect to the MCP server and run a DSPy ReAct plan.
+
+    Args:
+        user_request: Natural language request to satisfy using DexMCP tools.
+    """
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
             # Establish the MCP session and discover available tools.
@@ -67,7 +73,11 @@ async def run_request(user_request: str) -> None:
 
 
 def run_demo(prompts: Iterable[str]) -> None:
-    """Sequentially execute several demo prompts so each new endpoint is exercised."""
+    """Sequentially execute demo prompts to exercise tool coverage.
+
+    Args:
+        prompts: Iterable of demo prompts to run.
+    """
     import asyncio
 
     for prompt in prompts:

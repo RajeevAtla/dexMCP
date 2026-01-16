@@ -1,3 +1,5 @@
+"""Defensive type coverage analysis helpers."""
+
 from __future__ import annotations
 
 from typing import List, Sequence
@@ -7,7 +9,15 @@ from .models import TypeCoverageReport, TypeMatchupSummary
 
 
 def _calc_multiplier(attack_type: str, defend_types: Sequence[str]) -> float:
-    """Return how much damage an attack type deals to the provided defensive typing."""
+    """Return damage multiplier for an attack type against defensive types.
+
+    Args:
+        attack_type: Attacking type name.
+        defend_types: Defending type names for the Pokemon.
+
+    Returns:
+        Damage multiplier for the matchup.
+    """
     try:
         relations = api._get_type_relations(attack_type)
     except ValueError:
@@ -25,7 +35,17 @@ def _calc_multiplier(attack_type: str, defend_types: Sequence[str]) -> float:
 
 
 def analyze_type_coverage(names_or_dexes: List[str]) -> TypeCoverageReport:
-    """Summarize defensive coverage for a roster of Pokemon."""
+    """Summarize defensive coverage for a roster of Pokemon.
+
+    Args:
+        names_or_dexes: Pokemon names or dex numbers to analyze.
+
+    Returns:
+        Coverage report with matchup counts and notable strengths/weaknesses.
+
+    Raises:
+        ValueError: If no Pokemon identifiers are provided.
+    """
     # Helps team builders quickly spot shared weaknesses before heading into a battle.
     if not names_or_dexes:
         raise ValueError("names_or_dexes must contain at least one Pokemon")
