@@ -9,13 +9,7 @@ dependencies = [
   "pypokedex",
   "pydantic",
   "requests",
-]
-
-[project.optional-dependencies]
-dspy = [
   "dspy-ai",
-]
-langchain = [
   "langchain",
   "langchain-openai",
 ]

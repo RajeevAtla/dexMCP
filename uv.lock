@@ -631,19 +631,13 @@ name = "dexmcp"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "dspy-ai" },
+    { name = "langchain" },
+    { name = "langchain-openai" },
     { name = "mcp", extra = ["cli"] },
     { name = "pydantic" },
     { name = "pypokedex" },
     { name = "requests" },
-]
-
-[package.optional-dependencies]
-dspy = [
-    { name = "dspy-ai" },
-]
-langchain = [
-    { name = "langchain" },
-    { name = "langchain-openai" },
 ]
 
 [package.dev-dependencies]
@@ -658,15 +652,14 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "dspy-ai", marker = "extra == 'dspy'" },
-    { name = "langchain", marker = "extra == 'langchain'" },
-    { name = "langchain-openai", marker = "extra == 'langchain'" },
+    { name = "dspy-ai" },
+    { name = "langchain" },
+    { name = "langchain-openai" },
     { name = "mcp", extras = ["cli"] },
     { name = "pydantic" },
     { name = "pypokedex" },
     { name = "requests" },
 ]
-provides-extras = ["dspy", "langchain"]
 
 [package.metadata.requires-dev]
 dev = [
