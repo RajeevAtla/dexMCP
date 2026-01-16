@@ -11,20 +11,27 @@ jobs:
         fetch-depth: 0
         submodules: recursive
 
-    - name: Install rumdl
-      run: pip install --upgrade rumdl
-
-    - name: Format Markdown
-      run: |
-        rumdl fmt --disable=MD033
-
-    - name: Install Ruff
-      uses: astral-sh/ruff-action@v3
+    - name: Set up Python
+      uses: actions/setup-python@v5
       with:
-        version: "latest"
+        python-version: "3.11"
+
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        python-version: "3.13"
+        activate-environment: "true"
+        enable-cache: "true"
+        restore-cache: "true"
+        save-cache: "true"
+        cache-python: "true"
+
+    - name: Install lint dependencies
+      run: uv sync --group lint
 
     - name: Lint
       run: |
-        ruff check dspy_client.py
-        ruff check langchain_client.py
-        ruff check dexmcp/dexmcp_server.py
+        uv run rumdl fmt --disable=MD033
+        uv run ruff check dspy_client.py
+        uv run ruff check langchain_client.py
+        uv run ruff check dexmcp/dexmcp_server.py

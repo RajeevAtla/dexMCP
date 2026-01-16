@@ -76,10 +76,10 @@ applications can fetch Pokedex data without custom API plumbing.
 ### Prerequisites
 
 - Python 3.10 or newer.
+- `uv` for dependency management and running scripts.
 - An MCP aware client (or the Python `mcp` package) that can launch stdio
   servers.
 - Internet access so `pypokedex` can query PokeAPI the first time a Pokemon is
-
   requested.
 
 ### Clone and install dependencies
@@ -87,19 +87,23 @@ applications can fetch Pokedex data without custom API plumbing.
 ```bash
 git clone https://github.com/RajeevAtla/dexMCP.git
 cd dexMCP
-python -m venv .venv
-source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
-pip install "mcp[cli]" pypokedex dspy-ai
+uv venv
+uv sync
 ```
 
-The runtime requirements are `mcp` (for `FastMCP`), `pypokedex`, and the
-transitive `pydantic` dependency. Installing `dspy-ai` is optional but useful
-for trying the example agent below.
+The runtime requirements are `mcp` (for `FastMCP`), `pypokedex`, `requests`,
+and the transitive `pydantic` dependency. Install optional extras when you want
+the demo agents:
+
+```bash
+uv sync --extra dspy
+uv sync --extra langchain
+```
 
 ### Run the MCP server
 
 ```bash
-python dexmcp/dexmcp_server.py
+uv run python dexmcp/dexmcp_server.py
 ```
 
 The server speaks MCP over stdio. Configure an MCP client to launch the command
@@ -112,7 +116,8 @@ this server and calls the appropriate tools to satisfy natural language
 requests. Activate your virtual environment and run the curated demo suite:
 
 ```bash
-python dspy_client.py --demo
+uv sync --extra dspy
+uv run python dspy_client.py --demo
 ```
 
 The agent chains several tools to:
@@ -128,7 +133,7 @@ The agent chains several tools to:
 Provide your own prompt with:
 
 ```bash
-python dspy_client.py \
+uv run python dspy_client.py \
   "Compare Charizard and Tyranitar defensive coverage in scarlet-violet."
 ```
 
@@ -139,14 +144,14 @@ Add `--demo` alongside the prompt to run the canned sequence afterward.
 If you prefer LangChain, install the optional packages:
 
 ```bash
-pip install langchain langchain-openai
+uv sync --extra langchain
 ```
 
 Ensure `OPENAI_API_KEY` (or another provider key supported by your LangChain
 LLM) is present in the environment. Then launch the demo:
 
 ```bash
-python langchain_client.py --demo
+uv run python langchain_client.py --demo
 ```
 
 The LangChain agent mirrors the DSPy scenarios, exercising the coverage,
@@ -155,11 +160,20 @@ ability, evolution, encounter, breeding, and moveset tools.
 Supply a custom prompt with:
 
 ```bash
-python langchain_client.py \
+uv run python langchain_client.py \
   "Plan a battle ready moveset for gardevoir in scarlet-violet."
 ```
 
 Use `--demo` with a prompt to run it first before the guided walkthrough.
+
+## Testing
+
+```bash
+uv sync --group test
+uv run pytest
+```
+
+Pytest configuration (including coverage flags) lives in `pyproject.toml`.
 
 ## Project structure
 

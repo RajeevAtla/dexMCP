@@ -1,0 +1,37 @@
+[project]
+name = "dexmcp"
+version = "0.1.0"
+description = "MCP server that wraps pypokedex for PokeAPI."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "mcp[cli]",
+  "pypokedex",
+  "pydantic",
+  "requests",
+]
+
+[project.optional-dependencies]
+dspy = [
+  "dspy-ai",
+]
+langchain = [
+  "langchain",
+  "langchain-openai",
+]
+
+[dependency-groups]
+test = [
+  "pytest<9",
+  "pytest-cov",
+  "pytest-asyncio",
+  "coverage",
+]
+lint = [
+  "ruff",
+  "rumdl",
+]
+
+[tool.pytest.ini_options]
+addopts = "-ra --cov=dexmcp --cov-report=term-missing"
+asyncio_mode = "auto"
