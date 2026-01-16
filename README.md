@@ -92,13 +92,8 @@ uv sync
 ```
 
 The runtime requirements are `mcp` (for `FastMCP`), `pypokedex`, `requests`,
-and the transitive `pydantic` dependency. Install optional extras when you want
-the demo agents:
-
-```bash
-uv sync --extra dspy
-uv sync --extra langchain
-```
+`dspy-ai`, `langchain`, `langchain-openai`, and the transitive `pydantic`
+dependency.
 
 ### Run the MCP server
 
@@ -116,7 +111,6 @@ this server and calls the appropriate tools to satisfy natural language
 requests. Activate your virtual environment and run the curated demo suite:
 
 ```bash
-uv sync --extra dspy
 uv run python dspy_client.py --demo
 ```
 
@@ -144,7 +138,6 @@ Add `--demo` alongside the prompt to run the canned sequence afterward.
 If you prefer LangChain, install the optional packages:
 
 ```bash
-uv sync --extra langchain
 ```
 
 Ensure `OPENAI_API_KEY` (or another provider key supported by your LangChain
