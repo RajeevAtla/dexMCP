@@ -32,6 +32,4 @@ jobs:
     - name: Lint
       run: |
         uv run rumdl fmt --disable=MD033
-        uv run ruff check dspy_client.py
-        uv run ruff check langchain_client.py
-        uv run ruff check dexmcp/dexmcp_server.py
+        uv run ruff check .
