@@ -28,5 +28,5 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra -n logical --cov=dexmcp --cov-report=term-missing"
+addopts = "-ra -n logical --cov=dexmcp --cov-report=term-missing --cov-fail-under=100"
 asyncio_mode = "auto"

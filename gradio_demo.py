@@ -32,16 +32,16 @@ def _ensure_core_types_shim() -> None:
 
 _ensure_core_types_shim()
 
-import gradio as gr
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
-from mcp.types import Tool
-from pydantic import BaseModel, Field, create_model
+import gradio as gr  # noqa: E402
+from mcp import ClientSession, StdioServerParameters  # noqa: E402
+from mcp.client.stdio import stdio_client  # noqa: E402
+from mcp.types import Tool  # noqa: E402
+from pydantic import BaseModel, Field, create_model  # noqa: E402
 
-from langchain.agents import AgentExecutor, create_tool_calling_agent
-from langchain.agents.structured_chat.base import StructuredChatAgent
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.tools import StructuredTool
+from langchain.agents import AgentExecutor, create_tool_calling_agent  # noqa: E402
+from langchain.agents.structured_chat.base import StructuredChatAgent  # noqa: E402
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder  # noqa: E402
+from langchain_core.tools import StructuredTool  # noqa: E402
 
 try:
     from langchain_google_genai import ChatGoogleGenerativeAI
