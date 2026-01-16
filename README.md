@@ -173,7 +173,17 @@ Pytest configuration (including coverage flags) lives in `pyproject.toml`.
 ```text
 .
 |-- dexmcp/
-|   `-- dexmcp_server.py   # FastMCP server that exposes the tool set
+|   |-- abilities.py       # Ability lookup helper
+|   |-- api.py             # PokeAPI + pypokedex helpers and caching
+|   |-- breeding.py        # Egg group and breeding helpers
+|   |-- coverage.py        # Type coverage analysis
+|   |-- encounters.py      # Wild encounter lookups
+|   |-- evolution.py       # Evolution chain traversal
+|   |-- models.py          # Pydantic schemas
+|   |-- moveset.py         # Moveset recommendation logic
+|   |-- pokemon.py         # Core Pokemon lookup helpers
+|   |-- server.py          # FastMCP server and tool wrappers
+|   `-- dexmcp_server.py   # Backward-compatible entrypoint
 |-- dspy_client.py         # DSPy demo agent that consumes the server
 |-- langchain_client.py    # LangChain demo agent for the same tools
 |-- logo.png               # Branding used in the README banner

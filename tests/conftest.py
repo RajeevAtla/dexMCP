@@ -4,6 +4,7 @@ from typing import Any, Dict, Iterable, List, Optional
 
 import pytest
 
+import dexmcp.api as api
 import dexmcp.dexmcp_server as server
 
 
@@ -71,10 +72,10 @@ class StubPokemon:
 
 @pytest.fixture(autouse=True)
 def reset_caches() -> None:
-    server._cached_fetch.cache_clear()
-    server._list_all_types.cache_clear()
-    server._get_type_relations.cache_clear()
-    server._get_move_data.cache_clear()
+    api._cached_fetch.cache_clear()
+    api._list_all_types.cache_clear()
+    api._get_type_relations.cache_clear()
+    api._get_move_data.cache_clear()
 
 
 @pytest.fixture(autouse=True)
@@ -159,7 +160,7 @@ def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
             return pokemon_registry[dex]
         raise ValueError("Pokemon not found")
 
-    monkeypatch.setattr(server.pypokedex, "get", fake_get)
+    monkeypatch.setattr(api.pypokedex, "get", fake_get)
 
     type_list = ["dragon", "ground", "electric", "water", "flying", "ice"]
 
@@ -385,7 +386,7 @@ def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
                 return move_entries[move_name]
         raise AssertionError(f"Unexpected URL {url} requested for context {context}")
 
-    monkeypatch.setattr(server, "_fetch_json", fake_fetch_json)
+    monkeypatch.setattr(api, "_fetch_json", fake_fetch_json)
 
 
 @pytest.fixture
