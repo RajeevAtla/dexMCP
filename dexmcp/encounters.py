@@ -19,19 +19,23 @@ def find_encounters(name_or_dex: str) -> EncounterReport:
     """
     # Useful for players planning hunts or resource runs in a specific game version.
     pk = api._lookup(name_or_dex)
+    # PokeAPI returns a list of encounter entries keyed by location area.
     data = api._fetch_json(
         f"https://pokeapi.co/api/v2/pokemon/{pk.dex}/encounters",
         context=f"encounter data for {pk.name}",
     )
     locations: List[EncounterLocation] = []
     for entry in data:
+        # Each entry is tied to a location area (e.g., "victory-road").
         location_area = entry.get("location_area", {}).get("name")
         versions: List[EncounterVersion] = []
         for version_detail in entry.get("version_details", []):
+            # Each version aggregates encounter details and a max chance.
             version_name = version_detail.get("version", {}).get("name")
             max_chance = version_detail.get("max_chance", 0)
             details: List[EncounterDetail] = []
             for detail in version_detail.get("encounter_details", []):
+                # Each detail describes a method + levels + encounter chance.
                 details.append(
                     EncounterDetail(
                         method=(detail.get("method") or {}).get("name", "unknown"),
@@ -58,4 +62,5 @@ def find_encounters(name_or_dex: str) -> EncounterReport:
                 versions=versions,
             )
         )
+    # Pack everything into the report model for MCP clients.
     return EncounterReport(pokemon=pk.name, locations=locations)

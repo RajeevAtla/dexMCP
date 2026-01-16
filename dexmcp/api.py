@@ -11,6 +11,7 @@ import pypokedex
 
 # requests is used for direct PokeAPI lookups that supplement the pypokedex client.
 
+# Types that exist in the API but are not used for standard battles.
 IGNORED_TYPES = {"unknown", "shadow"}
 
 
@@ -29,6 +30,7 @@ def _cached_fetch(url: str) -> Dict:
         ValueError: If the response cannot be decoded as JSON.
     """
     # Cache raw HTTP responses so repeated tooling calls do not spam the public API.
+    # This keeps the server responsive and avoids rate-limiting.
     response = requests.get(url, timeout=10)
     response.raise_for_status()
     return response.json()
@@ -47,6 +49,7 @@ def _fetch_json(url: str, context: str) -> Dict:
     Raises:
         ValueError: If the request fails or JSON decoding fails.
     """
+    # Wrap lower-level exceptions in a consistent, user-facing error.
     try:
         return _cached_fetch(url)
     except (requests.RequestException, ValueError) as exc:
@@ -66,6 +69,7 @@ def _lookup(name_or_dex: str):
         ValueError: If the Pokemon cannot be found.
     """
     # pypokedex caches responses locally, so repeat lookups avoid hitting the public API.
+    # Use numeric dex IDs when the input is digits only.
     try:
         if name_or_dex.isdigit():
             return pypokedex.get(dex=int(name_or_dex))
@@ -83,6 +87,7 @@ def _list_all_types() -> List[str]:
         Sorted list of type names excluding ignored types.
     """
     # Grab the canonical list of types once per process; the result drives coverage math.
+    # Sort to keep deterministic ordering for reports/tests.
     data = _fetch_json("https://pokeapi.co/api/v2/type", context="type listing")
     types = [entry["name"] for entry in data.get("results", [])]
     return sorted([type_name for type_name in types if type_name not in IGNORED_TYPES])
@@ -98,6 +103,7 @@ def _get_type_relations(type_name: str) -> Dict[str, List[str]]:
     Returns:
         Mapping of damage relation keys to lists of type names.
     """
+    # Damage relations are used to compute defensive multipliers.
     data = _fetch_json(
         f"https://pokeapi.co/api/v2/type/{type_name.lower()}",
         context=f"type data for {type_name}",
@@ -123,6 +129,7 @@ def _get_move_data(move_name: str) -> Dict:
     Returns:
         Move metadata payload from PokeAPI.
     """
+    # Move data provides power/accuracy/type and effect text for scoring.
     return _fetch_json(
         f"https://pokeapi.co/api/v2/move/{move_name.lower()}",
         context=f"move data for {move_name}",
@@ -138,6 +145,7 @@ def _extract_short_effect(entries: List[Dict]) -> str | None:
     Returns:
         English short effect text, if available.
     """
+    # PokeAPI includes multiple languages; pull only English for summaries.
     for entry in entries:
         if entry.get("language", {}).get("name") == "en":
             return entry.get("short_effect")
@@ -153,6 +161,7 @@ def _extract_effect(entries: List[Dict]) -> str | None:
     Returns:
         English effect text, if available.
     """
+    # PokeAPI includes multiple languages; pull only English for summaries.
     for entry in entries:
         if entry.get("language", {}).get("name") == "en":
             return entry.get("effect")

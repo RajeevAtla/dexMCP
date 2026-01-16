@@ -31,6 +31,7 @@ from .models import (
 # FastMCP tool definitions that surface Pokedex data for agentic clients.
 # Each decorated function becomes a structured tool discoverable by MCP hosts.
 
+# Create the FastMCP server instance that registers the tool functions.
 mcp = FastMCP("DexMCP Server")
 
 
@@ -44,6 +45,7 @@ def get_pokemon(name_or_dex: str) -> PokemonSummary:
     Returns:
         Summary stats, typing, and measurements for the Pokemon.
     """
+    # Delegate to the core helper for consistent behavior.
     return _get_pokemon(name_or_dex)
 
 
@@ -58,6 +60,7 @@ def get_moves(name_or_dex: str, game: str) -> list[Move]:
     Returns:
         Moves the Pokemon can learn in the requested game.
     """
+    # Delegate to the core helper for consistent behavior.
     return _get_moves(name_or_dex, game)
 
 
@@ -73,6 +76,7 @@ def get_sprites(name_or_dex: str, side: str = "front", variant: str = "default")
     Returns:
         Sprite URL with the requested side and variant.
     """
+    # Delegate to the core helper for consistent behavior.
     return _get_sprites(name_or_dex, side=side, variant=variant)
 
 
@@ -87,6 +91,7 @@ def get_descriptions(name_or_dex: str, language: str = "en") -> dict[str, str]:
     Returns:
         Mapping of game version to flavor text.
     """
+    # Delegate to the core helper for consistent behavior.
     return _get_descriptions(name_or_dex, language=language)
 
 
@@ -100,6 +105,7 @@ def analyze_type_coverage(names_or_dexes: list[str]) -> TypeCoverageReport:
     Returns:
         Coverage report with matchup counts and notable weaknesses.
     """
+    # Delegate to the core helper for consistent behavior.
     return _analyze_type_coverage(names_or_dexes)
 
 
@@ -113,6 +119,7 @@ def explore_abilities(name_or_dex: str) -> AbilityExplorerResult:
     Returns:
         Ability names and effect text details.
     """
+    # Delegate to the core helper for consistent behavior.
     return _explore_abilities(name_or_dex)
 
 
@@ -126,6 +133,7 @@ def plan_evolutions(name_or_dex: str) -> EvolutionReport:
     Returns:
         Evolution paths and triggers.
     """
+    # Delegate to the core helper for consistent behavior.
     return _plan_evolutions(name_or_dex)
 
 
@@ -139,6 +147,7 @@ def find_encounters(name_or_dex: str) -> EncounterReport:
     Returns:
         Encounter locations grouped by version and method.
     """
+    # Delegate to the core helper for consistent behavior.
     return _find_encounters(name_or_dex)
 
 
@@ -153,6 +162,7 @@ def get_breeding_info(name_or_dex: str, game: str | None = None) -> BreedingInfo
     Returns:
         Breeding info including egg groups, hatch steps, and egg moves.
     """
+    # Delegate to the core helper for consistent behavior.
     return _get_breeding_info(name_or_dex, game=game)
 
 
@@ -174,4 +184,5 @@ def suggest_moveset(
     Returns:
         Ranked move recommendations based on simple heuristics.
     """
+    # Delegate to the core helper for consistent behavior.
     return _suggest_moveset(name_or_dex, game=game, limit=limit, include_tm=include_tm)

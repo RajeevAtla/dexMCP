@@ -24,7 +24,7 @@ DEMO_REQUESTS = (
     "Recommend a competitive moveset for greninja in sun-moon using level-up or tutor moves only.",
 )
 
-# Create server parameters for stdio connection
+# Create server parameters for stdio connection.
 server_params = StdioServerParameters(
     command="python",  # Executable
     args=["dexmcp/server.py"],  # Optional command line arguments
@@ -56,6 +56,7 @@ async def run_request(user_request: str) -> None:
     Args:
         user_request: Natural language request to satisfy using DexMCP tools.
     """
+    # Start the MCP server and create a client session over stdio.
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
             # Establish the MCP session and discover available tools.
@@ -68,6 +69,7 @@ async def run_request(user_request: str) -> None:
             # Instantiate a lightweight ReAct agent that can plan/tool-call using the signature above.
             react = dspy.ReAct(DSPyPokedex, tools=dspy_tools)
 
+            # Run the agent asynchronously and print the final response.
             result = await react.acall(user_request=user_request)
             print(result)
 
@@ -80,6 +82,7 @@ def run_demo(prompts: Iterable[str]) -> None:
     """
     import asyncio
 
+    # Sequential execution keeps the output easy to read.
     for prompt in prompts:
         print("\n=== {} ===".format(prompt))
         asyncio.run(run_request(prompt))
@@ -88,6 +91,7 @@ def run_demo(prompts: Iterable[str]) -> None:
 if __name__ == "__main__":
     import asyncio
 
+    # CLI parsing for demo vs. custom prompts.
     parser = argparse.ArgumentParser(description="Run the DexMCP DSPy demo client.")
     parser.add_argument(
         "prompt",

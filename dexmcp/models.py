@@ -7,6 +7,9 @@ from typing import Dict, List, Optional
 from pydantic import BaseModel, Field
 
 
+# --- Core Pokemon summary models ---
+
+
 class BaseStats(BaseModel):
     """Base stat block for a Pokemon."""
 
@@ -24,12 +27,16 @@ class PokemonSummary(BaseModel):
     dex: int = Field(description="National Pokedex number")
     name: str
     types: List[str]
+    # Keep both raw and derived units so clients can pick a display.
     height_dm: int = Field(description="Height in decimeters (as provided by API)")
     height_m: float = Field(description="Height in meters (derived)")
     weight_hg: int = Field(description="Weight in hectograms (as provided by API)")
     weight_kg: float = Field(description="Weight in kilograms (derived)")
     base_experience: int
     base_stats: BaseStats
+
+
+# --- Move + sprite outputs ---
 
 
 class Move(BaseModel):
@@ -50,6 +57,9 @@ class SpriteURL(BaseModel):
     variant: str = Field(
         description="one of: default, shiny, female, female_shiny (depends on availability)"
     )
+
+
+# --- Coverage analysis outputs ---
 
 
 class TypeMatchupSummary(BaseModel):
@@ -75,6 +85,9 @@ class TypeCoverageReport(BaseModel):
     )
 
 
+# --- Ability outputs ---
+
+
 class AbilityDetail(BaseModel):
     """Detailed ability info with effect text."""
 
@@ -89,6 +102,9 @@ class AbilityExplorerResult(BaseModel):
 
     pokemon: str
     abilities: List[AbilityDetail]
+
+
+# --- Evolution outputs ---
 
 
 class EvolutionStep(BaseModel):
@@ -113,6 +129,9 @@ class EvolutionReport(BaseModel):
 
     pokemon: str
     paths: List[EvolutionPath]
+
+
+# --- Encounter outputs ---
 
 
 class EncounterDetail(BaseModel):
@@ -147,6 +166,9 @@ class EncounterReport(BaseModel):
     locations: List[EncounterLocation]
 
 
+# --- Breeding outputs ---
+
+
 class GenderRatio(BaseModel):
     """Gender ratio percentages for a Pokemon."""
 
@@ -164,6 +186,9 @@ class BreedingInfo(BaseModel):
     egg_moves: List[str]
 
 
+# --- Moveset recommendation outputs ---
+
+
 class MoveRecommendation(BaseModel):
     """Move recommendation metadata and scoring."""
 
@@ -175,6 +200,7 @@ class MoveRecommendation(BaseModel):
     learn_method: str
     level: Optional[int]
     stab: bool
+    # Score is a heuristic, not a competitive tiering metric.
     score: float
     short_effect: Optional[str]
     effect: Optional[str]

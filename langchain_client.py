@@ -24,6 +24,7 @@ except ImportError:  # pragma: no cover - fallback for older LangChain installs
     from langchain.chat_models import ChatOpenAI  # type: ignore
 
 
+# Demo prompts that exercise the richer tool surface.
 DEMO_REQUESTS: Tuple[str, ...] = (
     "Show Garchomp's base stats then list all level-up moves in ORAS.",
     "Analyze the defensive type coverage for pikachu, garchomp, and gyarados and call out weaknesses.",
@@ -34,12 +35,14 @@ DEMO_REQUESTS: Tuple[str, ...] = (
     "Recommend a competitive moveset for greninja in sun-moon using level-up or tutor moves only.",
 )
 
+# MCP server command configuration for stdio transport.
 SERVER_PARAMS = StdioServerParameters(
     command="python",
     args=["dexmcp/server.py"],
     env=None,
 )
 
+# Map JSON schema primitive types to Python types.
 TYPE_MAP: Dict[str, Type[Any]] = {
     "string": str,
     "integer": int,
@@ -66,12 +69,15 @@ def _json_schema_to_annotation(schema: Dict[str, Any]) -> Type[Any]:
     Returns:
         Python type annotation for the schema.
     """
+    # Default to string when the schema type is missing.
     schema_type = schema.get("type", "string")
     if schema_type == "array":
         items_schema = schema.get("items", {})
+        # Use Any for empty item schemas to avoid overly strict typing.
         inner = _json_schema_to_annotation(items_schema) if items_schema else Any
         return List[inner]
     if schema_type == "object":
+        # Free-form object payloads map to a generic dict.
         return Dict[str, Any]
     return TYPE_MAP.get(schema_type, str)
 
@@ -85,15 +91,18 @@ def _build_args_model(tool: Tool) -> Type[BaseModel]:
     Returns:
         A dynamically created Pydantic model for tool arguments.
     """
+    # Tool schemas follow JSON schema conventions.
     properties = tool.input_schema.get("properties", {}) if tool.input_schema else {}
     required = set(tool.input_schema.get("required", [])) if tool.input_schema else set()
 
     if not properties:
+        # Some tools take no args; expose a generic payload field.
         return create_model(
             f"{tool.name.title().replace('-', '').replace('_', '')}Args",
             payload=(Dict[str, Any], Field(default_factory=dict)),
         )
 
+    # Build Pydantic fields dynamically based on the schema.
     fields: Dict[str, Tuple[Type[Any], Field]] = {}
     for prop_name, prop_schema in properties.items():
         annotation = _json_schema_to_annotation(prop_schema)
@@ -110,6 +119,7 @@ def _build_args_model(tool: Tool) -> Type[BaseModel]:
 
         fields[prop_name] = (annotation, field_info)
 
+    # Build a stable model name from the tool name.
     model_name = f"{tool.name.title().replace('-', '').replace('_', '')}Args"
     return create_model(model_name, **fields)  # type: ignore[arg-type]
 
@@ -123,8 +133,10 @@ def _format_content(content: Iterable[Any]) -> str:
     Returns:
         Formatted string representation of the content.
     """
+    # Flatten tool output content into a readable string.
     parts: List[str] = []
     for item in content:
+        # Handle common structured response shapes.
         if hasattr(item, "text") and getattr(item, "text"):
             parts.append(getattr(item, "text"))
         elif hasattr(item, "data") and getattr(item, "data"):
@@ -145,6 +157,7 @@ async def _build_tool_specs(session: ClientSession) -> List[ToolSpec]:
     Returns:
         Tool specification entries for LangChain.
     """
+    # Discover tools from the MCP server.
     tool_listing = await session.list_tools()
     specs: List[ToolSpec] = []
 
@@ -152,13 +165,16 @@ async def _build_tool_specs(session: ClientSession) -> List[ToolSpec]:
         args_model = _build_args_model(mcp_tool)
 
         async def call_tool(_args_model=args_model, _tool_name=mcp_tool.name, **kwargs: Any) -> str:
+            # Validate arguments using the Pydantic model.
             validated = _args_model(**kwargs)
             result = await session.call_tool(
                 _tool_name,
                 arguments=validated.model_dump(exclude_none=True),
             )
+            # Convert the result into a displayable string.
             return _format_content(result.content)
 
+        # Build the LangChain tool wrapper.
         tool = StructuredTool(
             name=mcp_tool.name,
             description=mcp_tool.description or "",
@@ -176,14 +192,17 @@ async def run_agent(prompt: str, model: str) -> None:
         prompt: Natural language request for the agent.
         model: Model identifier for the ChatOpenAI wrapper.
     """
+    # Deterministic output keeps demos stable.
     llm = ChatOpenAI(model=model, temperature=0)
 
+    # Start MCP server and build tool list for the agent.
     async with stdio_client(SERVER_PARAMS) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
             tool_specs = await _build_tool_specs(session)
             tools = [spec.structured_tool for spec in tool_specs]
 
+            # System prompt steers the agent to always use tool results.
             system_message = (
                 "You are DexMCP, a knowledgeable Pokedex assistant. Use the provided tools to satisfy requests. "
                 "Always cite tool results in concise natural language."
@@ -196,6 +215,7 @@ async def run_agent(prompt: str, model: str) -> None:
                 ]
             )
 
+            # Build a tool-calling agent and execute it.
             agent = create_tool_calling_agent(llm, tools, prompt_template)
             executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
             result = await executor.ainvoke({"input": prompt})
@@ -209,6 +229,7 @@ def run_demo(prompts: Iterable[str], model: str) -> None:
         prompts: Demo prompts to execute.
         model: Model identifier for the ChatOpenAI wrapper.
     """
+    # Sequential execution keeps the output readable.
     for prompt in prompts:
         print("\n=== {} ===".format(prompt))
         asyncio.run(run_agent(prompt, model=model))
@@ -216,6 +237,7 @@ def run_demo(prompts: Iterable[str], model: str) -> None:
 
 def main() -> None:
     """Parse CLI arguments and run the LangChain demo or prompt."""
+    # CLI parsing for demo vs. custom prompts.
     parser = argparse.ArgumentParser(description="Run the DexMCP LangChain demo client.")
     parser.add_argument(
         "prompt",

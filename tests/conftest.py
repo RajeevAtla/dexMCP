@@ -117,6 +117,7 @@ class StubPokemon:
 @pytest.fixture(autouse=True)
 def reset_caches() -> None:
     """Clear API caches before each test run."""
+    # Ensure cached lookups do not leak across tests.
     api._cached_fetch.cache_clear()
     api._list_all_types.cache_clear()
     api._get_type_relations.cache_clear()
@@ -130,6 +131,7 @@ def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
     Args:
         monkeypatch: Pytest monkeypatch fixture.
     """
+    # Build shared fixture data for the test registry.
     base_stats = StubBaseStats(hp=108, attack=130, defense=95, sp_atk=80, sp_def=85, speed=102)
     garchomp_moves = {
         "omega-ruby-alpha-sapphire": [
@@ -192,6 +194,7 @@ def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
         base_experience=189,
     )
 
+    # Name/dex lookups map to stubbed Pokemon objects.
     pokemon_registry = {
         "garchomp": garchomp,
         "pikachu": pikachu,
@@ -222,10 +225,13 @@ def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
             return pokemon_registry[dex]
         raise ValueError("Pokemon not found")
 
+    # Patch pypokedex lookups so no network calls happen during tests.
     monkeypatch.setattr(api.pypokedex, "get", fake_get)
 
+    # Curated type list keeps coverage reports deterministic.
     type_list = ["dragon", "ground", "electric", "water", "flying", "ice"]
 
+    # Minimal type relations to validate coverage calculations.
     type_relations = {
         "dragon": {
             "double_damage_to": [{"name": "dragon"}],
@@ -259,6 +265,7 @@ def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
         },
     }
 
+    # Ability payloads for effect text tests.
     ability_entries = {
         "sand-veil": {
             "effect_entries": [
@@ -282,6 +289,7 @@ def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
         },
     }
 
+    # Move payloads for moveset scoring tests.
     move_entries = {
         "dragon-claw": {
             "damage_class": {"name": "physical"},
@@ -348,6 +356,7 @@ def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
         },
     }
 
+    # Species payloads for breeding and evolution lookups.
     species_entries = {
         445: {
             "egg_groups": [{"name": "monster"}, {"name": "dragon"}],
@@ -369,6 +378,7 @@ def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
         },
     }
 
+    # Evolution chain payloads for evolution traversal.
     evolution_chains = {
         "https://pokeapi.co/api/v2/evolution-chain/222": {
             "chain": {
@@ -396,6 +406,7 @@ def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
         },
     }
 
+    # Encounter payloads for the encounter lookup helper.
     encounter_entries = {
         445: [
             {
@@ -457,6 +468,7 @@ def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
                 return move_entries[move_name]
         raise AssertionError(f"Unexpected URL {url} requested for context {context}")
 
+    # Patch the shared JSON fetch helper to use in-memory payloads.
     monkeypatch.setattr(api, "_fetch_json", fake_fetch_json)
 
 
@@ -464,6 +476,7 @@ def stubbed_external_dependencies(monkeypatch: pytest.MonkeyPatch) -> None:
 def pokemon_registry() -> Dict[str, StubPokemon]:
     """Expose a minimal registry for tests that inspect fixtures."""
     # Expose registry for tests that need to inspect raw fixtures.
+    # Keep this separate from the autouse registry for test isolation.
     base_stats = StubBaseStats(hp=108, attack=130, defense=95, sp_atk=80, sp_def=85, speed=102)
     garchomp_moves = {
         "omega-ruby-alpha-sapphire": [

@@ -21,11 +21,13 @@ def explore_abilities(name_or_dex: str) -> AbilityExplorerResult:
     pk = api._lookup(name_or_dex)
     abilities: List[AbilityDetail] = []
     for ability in pk.abilities:
+        # Each ability needs its own endpoint call to fetch effect text.
         data = api._fetch_json(
             f"https://pokeapi.co/api/v2/ability/{ability.name}",
             context=f"ability data for {ability.name}",
         )
         effect_entries = data.get("effect_entries", [])
+        # Convert raw API data into the model the MCP tool returns.
         abilities.append(
             AbilityDetail(
                 name=ability.name,
